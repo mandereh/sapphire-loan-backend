@@ -30,5 +30,10 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'remita' => [
+        'base_uri' => env('REMITA_BASE_URI'),
+        'username' => env('REMITA_USERNAME'),
+        'password' => env('REMITA_PASSWORD')
+    ]
 
 ];
