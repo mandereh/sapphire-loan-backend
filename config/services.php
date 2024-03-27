@@ -34,6 +34,10 @@ return [
         'base_uri' => env('REMITA_BASE_URI'),
         'username' => env('REMITA_USERNAME'),
         'password' => env('REMITA_PASSWORD')
+    ],
+    'digisign' => [
+        'baseUri' => env('DIGISIGN_BASE_URI'),
+        'apiKey' => env('DIGISIGN_API_KEY'),
     ]
 
 ];
