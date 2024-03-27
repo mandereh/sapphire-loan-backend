@@ -17,14 +17,14 @@ class LoanTypeSeeder extends Seeder
         DB::table('loan_types')->insert([
             'name' => 'Cash Loan',
             'cute_name' => 'I want cash',
-            'status' => 'enabled',
+            'active' => true,
             'rate' => 5,
             'dti' => 50,
             'fees' => 0
         ],
         [
             'name' => 'Asset Loan', 
-            'status' => 'enabled', 
+            'active' => true, 
             'cute_name' => 'I want a Phone',
             'rate' => 5,
             'dti' => 50,

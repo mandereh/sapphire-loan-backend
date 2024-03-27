@@ -18,11 +18,11 @@ return new class extends Migration
     {
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
-            $table->uniqid('LO');
+            $table->string('reference')->unique();
             $table->foreignIdFor(LoanType::class, 'loan_type_id');
             $table->foreignIdFor(Organization::class, 'organization_id');
             $table->foreignIdFor(User::class, 'user_id');
-            $table->foreignId(User::class, 'relationship_manager_id');
+            $table->foreignIdFor(User::class, 'relationship_manager_id');
             $table->decimal('amount', 11, 2);
             $table->decimal('approved_amount', 11, 2)->default(0);
             $table->decimal('balance', 11, 2)->default(0);
@@ -35,11 +35,11 @@ return new class extends Migration
             $table->string('salary_account_number');
             $table->foreignIdFor(Bank::class, 'bank_id');
             $table->foreignIdFor(State::class, 'state_id');
-            $table->foreignId(User::class, 'reffered_by_id')->nullable();
+            $table->foreignIdFor(User::class, 'reffered_by_id')->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->string('status');
-            $table->boolean('assesmentDone')->default(false);
-            $table->boolean('deductionSetup')->default(false);
+            $table->boolean('assesment_done')->default(false);
+            $table->boolean('deduction_setup')->default(false);
             $table->text('failure_reason');
             $table->string('mandate_reference')->nullable();
             $table->softDeletes();

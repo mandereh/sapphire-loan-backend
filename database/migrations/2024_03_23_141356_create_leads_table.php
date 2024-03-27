@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('leads', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('phone_number');
+            $table->string('account_number')->nullable();
+            $table->string('ippis_number')->nullable();
+            $table->string('organization_name')->nullable();
+            $table->string('state_name')->nullable();
+            $table->string('city_name')->nullable();
             $table->timestamps();
         });
     }

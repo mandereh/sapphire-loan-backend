@@ -15,17 +15,13 @@ class UserController extends Controller
     //
     public function token(LoginUserRequest $request){
 
-        // throw ValidationException::withMessages([
-        //     'email' => ['System currently unavailable'],
-        // ]);
-
         // $sourceApp =  AppAccessToken::where('app_name', $request->input("appName", $request->header('appname')))->first();
 
         $email = $request->input('email', filter_var($request->username, FILTER_VALIDATE_EMAIL) ? $request->username : '');
 
         $phoneNumber = $request->input('phone_number', ctype_digit($request->username) && strlen($request->username) == '11' ? $request->username : '');
 
-        $user = User::where('email', $email)->orWhere('phone_number', $phoneNumber)->orWhere('username', $request->username)->first();
+        $user = User::where('email', $email)->orWhere('phone_number', $phoneNumber)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
@@ -43,7 +39,7 @@ class UserController extends Controller
         //$user->tokens()->delete();
 
         //Update user last login
-        $token = $user->createToken($user->appName())->plainTextToken;
+        $token = $user->createToken($request->header('appName'), $user->getAllPermissions())->plainTextToken;
 
         Event::dispatch(new Login(auth()->guard(), $user, false));
 
