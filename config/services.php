@@ -34,6 +34,9 @@ return [
         'base_uri' => env('REMITA_BASE_URI'),
         'username' => env('REMITA_USERNAME'),
         'password' => env('REMITA_PASSWORD')
+    ],
+    'giro' => [
+        'base_uri' => env('GIRO_BASE_URI'),
+        'apiKey' => env('GIRO_API_KEY'),
     ]
-
 ];

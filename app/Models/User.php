@@ -15,13 +15,17 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles, HasApiTokens;
 
+    protected array $guard_name = ['sanctum', 'web'];
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
+        'active',
         'email',
         'password',
         'phone_number',
@@ -59,5 +63,11 @@ class User extends Authenticatable
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    public function allPermissions(){
+        return $this->getAllPermissions()->map(function($pr){
+            return $pr['name'];
+        });
     }
 }

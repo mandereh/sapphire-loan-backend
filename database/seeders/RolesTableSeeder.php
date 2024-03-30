@@ -25,7 +25,8 @@ class RolesTableSeeder extends Seeder
 
         foreach($roles as $role){
             Role::where('name', $role)->firstOrCreate([
-                'name' => $role
+                'name' => $role,
+                'guard_name' => 'sanctum'
             ]);
         }
 

@@ -29,7 +29,7 @@ class UserController extends Controller
             ]);
         }
 
-        if ($user->status != "active" ) {
+        if (!$user->active) {
             throw ValidationException::withMessages([
                 'email' => ['Your account is no longer active.'],
             ]);
@@ -39,7 +39,7 @@ class UserController extends Controller
         //$user->tokens()->delete();
 
         //Update user last login
-        $token = $user->createToken($request->header('appName'), $user->getAllPermissions())->plainTextToken;
+        $token = $user->createToken($request->header('appName'), $user->allPermissions()->toArray())->plainTextToken;
 
         Event::dispatch(new Login(auth()->guard(), $user, false));
 
@@ -48,7 +48,7 @@ class UserController extends Controller
 
 
         $resp = [
-            'status_code' => 'successful',
+            'status_code' => '00',
             'message' => "Token retrieved",
             'token' => $token,
             'permissions' => $user->allPermissions()

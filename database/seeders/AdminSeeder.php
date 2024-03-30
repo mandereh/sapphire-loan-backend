@@ -18,22 +18,23 @@ class AdminSeeder extends Seeder
     public function run()
     {
         $adminUser = User::firstOrCreate(['email' => 'courage.bekenawei@spectrummfb.com'],[
-            'name' => 'Courage Bekenawei',
+            'first_name' => 'Courage',
+            'last_name' => 'Bekenawei',
             'email' => 'cbekenawei@gmail.com',
             'phone_number' => '08061148035',
-            'username' => 'courage',
             'password' => Hash::make('Password1'),
+            'active' => true
         ]);
 
         $adminUser->email_verified_at = now();
 
         $adminUser->save();
 
-        $adminRole = Role::where('name', 'Super Admin')->first();
+        $adminRole = Role::where('name', 'Super Admin')->where('guard_name', 'sanctum')->first();
 
-        $allPermissions = Permission::where('guard_name', 'web')->get();
+        $allPermissions = Permission::where('guard_name', 'sanctum')->get();
 
-        $adminRole->syncPermissions($allPermissions, '');
+        $adminRole->syncPermissions($allPermissions);
 
         $adminUser->syncRoles($adminRole);
     }

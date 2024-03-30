@@ -42,13 +42,17 @@ class PermissionsTableSeeder extends Seeder
             'upload-leads',
             'delete-leads',
             'view-logs',
-            'view-banks'
+            'view-banks',
+            'view-admin',
+            'create-admin',
+            'edit-admin',
         ];
 
         foreach($permissions as $permission){
-            $permission = Permission::where(['name' => $permission, 'guard_name' => 'web'])->firstOrNew(
+            $permission = Permission::where(['name' => $permission, 'guard_name' => 'sanctum'])->firstOrNew(
                 [
                     'name' => $permission,
+                    'guard_name' => 'sanctum'
                 ]
             );
 
