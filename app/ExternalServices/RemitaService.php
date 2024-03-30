@@ -42,12 +42,11 @@ class RemitaService
         $this->requestId = uuid_create();
         $this->apiHash = $this->generateConsumerToken();
         $this->authorization = $this->constructAuthorization();
-
     }
 
     public function getAccessToken()
     {
-        if (!$this->accessToken || $this->tokenExpiresAt <= now()){
+        if (!$this->accessToken || $this->tokenExpiresAt <= now()) {
             $this->requestAccessToken();
         }
         return $this->accessToken;
@@ -56,7 +55,7 @@ class RemitaService
     private function requestAccessToken()
     {
         try {
-            $response = $this->client->post($this->baseUri."/uaasvc/uaa/token",[
+            $response = $this->client->post($this->baseUri . "/uaasvc/uaa/token", [
                 'json' => [
                     'grant_type' => 'password',
                     'username' => $this->username,
@@ -64,10 +63,10 @@ class RemitaService
 
                 ],
             ]);
-            $data = json_decode($response->getBody()->getContents(),true);
+            $data = json_decode($response->getBody()->getContents(), true);
             $this->accessToken = $data['data'][0]['accessToken'];
             $this->tokenExpiresAt = now()->addSeconds($data['data'][0]['expiresIn']);
-        }catch (GuzzleException $e){
+        } catch (GuzzleException $e) {
             throw $e;
         }
     }
@@ -86,10 +85,10 @@ class RemitaService
 
     private function makeRequest($method, $uri, $headers = [], $data = [])
     {
-        $cacheKey = md5($uri.json_encode($data));
+        $cacheKey = md5($uri . json_encode($data));
         $cacheDuration = now()->addMinutes(60);
 
-        if (Cache::has($cacheKey)){
+        if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
@@ -107,37 +106,7 @@ class RemitaService
         }
     }
 
-    public function getSalaryHistory($data = [])
-    {
-        $headers = [
-          'Content-Type' => 'application/json',
-            'API_KEY' => $this->apiKey,
-            'MERCHANT_ID' => $this->merchantId,
-            'REQUEST_ID' => $this->requestId,
-            'AUTHORIZATION' => $this->authorization,
-            'Authorization' => $this->accessToken,
-        ];
-
-
-        return $this->makeRequest('POST',$this->baseUri."/loansvc/data/api/v2/payday/salary/history/provideCustomerDetails",$headers,$data);
-
-    }
-
-    public function loanDisburstmentNotification($data = [])
-    {
-        $headers = [
-          'Content-Type' => 'application/json',
-            'API_KEY' => $this->apiKey,
-            'MERCHANT_ID' => $this->merchantId,
-            'REQUEST_ID' => $this->requestId,
-            'AUTHORIZATION' => $this->authorization,
-            'Authorization' => $this->accessToken,
-        ];
-
-        return $this->makeRequest('POST',"{$this->baseUri}/loansvc/data/api/v2/payday/post/loan",$headers,$data);
-    }
-
-    public function mandateHistory($data = [])
+    public function getSalaryHistory($requestData = [])
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -147,11 +116,22 @@ class RemitaService
             'AUTHORIZATION' => $this->authorization,
             'Authorization' => $this->accessToken,
         ];
+        $data = [
+            'authorisationCode' => $requestData['authorisationCode'],
+            'firstname' => $requestData['firstname'],
+            'lastname' => $requestData['lastname'],
+            'middlename' => $requestData['middlename'],
+            'accountNumber' => $requestData['accountNumber'],
+            'bankCode' => $requestData['bankCode'],
+            'bvn' => $requestData['bvn'],
+            'authorisationChannel' => $requestData['authorisationChannel']
+        ];
 
-        return $this->makeRequest('POST',"{$this->baseUri}/loansvc/data/api/v2/payday/loan/payment/history",$headers,$data);
+
+        return $this->makeRequest('POST', $this->baseUri . "/loansvc/data/api/v2/payday/salary/history/provideCustomerDetails", $headers, $data);
     }
 
-    public function stopLoanCollection($data = [])
+    public function loanDisburstmentNotification($requestData = [])
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -161,15 +141,60 @@ class RemitaService
             'AUTHORIZATION' => $this->authorization,
             'Authorization' => $this->accessToken,
         ];
+        $data = [
+            "customerId" => $requestData["customerId"],
+            "authorisationCode" => $requestData["authorisationCode"],
+            "authorisationChannel" => $requestData["USSD"],
+            "phoneNumber" => $requestData["phoneNumber"],
+            "accountNumber" => $requestData["accountNumber"],
+            "currency" => $requestData["NGN"],
+            "loanAmount" => $requestData["loanAmount"],
+            "collectionAmount" => $requestData["collectionAmount"],
+            "dateOfDisbursement" => $requestData["disbursementDate"],
+            "dateOfCollection" => $requestData["disbursementDate"],
+            "totalCollectionAmount" => $requestData["totalCollectionAmount"],
+            "numberOfRepayments" => $requestData["numberOfRepayments"],
+            "bankCode" => $requestData["bankCode"]
+        ];
 
-        return $this->makeRequest('POST',"{$this->baseUri}/loansvc/data/api/v2/payday/stop/loan",$headers,$data);
+        return $this->makeRequest('POST', "{$this->baseUri}/loansvc/data/api/v2/payday/post/loan", $headers, $data);
     }
 
+    public function mandateHistory($requestData = [])
+    {
+        $headers = [
+            'Content-Type' => 'application/json',
+            'API_KEY' => $this->apiKey,
+            'MERCHANT_ID' => $this->merchantId,
+            'REQUEST_ID' => $this->requestId,
+            'AUTHORIZATION' => $this->authorization,
+            'Authorization' => $this->accessToken,
+        ];
+        $data = [
+            "authorisationCode" => $requestData["authorisationCode"],
+            "customerId" => $requestData["customerId"],
+            "mandateRef" => $requestData["mandateReference"]
+        ];
 
+        return $this->makeRequest('POST', "{$this->baseUri}/loansvc/data/api/v2/payday/loan/payment/history", $headers, $data);
+    }
 
+    public function stopLoanCollection($requestData = [])
+    {
+        $headers = [
+            'Content-Type' => 'application/json',
+            'API_KEY' => $this->apiKey,
+            'MERCHANT_ID' => $this->merchantId,
+            'REQUEST_ID' => $this->requestId,
+            'AUTHORIZATION' => $this->authorization,
+            'Authorization' => $this->accessToken,
+        ];
+        $data = [
+            "authorisationCode" => ["authorisationCode"],
+            "customerId" => ["customerId"],
+            "mandateReference" => ["mandateReference"]
+        ];
 
-
-
-
-
+        return $this->makeRequest('POST', "{$this->baseUri}/loansvc/data/api/v2/payday/stop/loan", $headers, $data);
+    }
 }
