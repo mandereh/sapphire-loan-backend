@@ -84,7 +84,7 @@ class RemitaService
         return "remitaConsumerKey={$this->apiKey},remitaConsumerToken={$this->apiHash}";
     }
 
-    private function makeRequest(String $method,String $uri,array $headers = [],array $data = [], array $requestLog = [])
+    private function makeRequest(String $method,String $uri,array $headers = [],array $queryParam = [],array $formParam = [],array $data = [], array $requestLog = [])
     {
         $cacheKey = md5($uri . json_encode($data));
         $cacheDuration = now()->addMinutes(60);
@@ -105,13 +105,18 @@ class RemitaService
 
             $response = $this->client->request($method, $uri, [
                 'headers' => $headers,
+                'query' => $queryParam,
+                'form_params' => $formParam,
                 'json' => $data
             ]);
 
             $responseData = json_decode($response->getBody()->getContents(), true);
+
             Cache::put($cacheKey, $responseData, $cacheDuration);
+
             $request_log->response_payload = json_encode($responseData);
             $request_log->save();
+
             return $responseData;
         } catch (GuzzleException $e) {
             // Handle exception
@@ -119,7 +124,24 @@ class RemitaService
         }
     }
 
-    public function getSalaryHistory($requestData = [])
+    /**
+     * Get salary history for the loan applicant.
+     *
+     * @param array $requestData An array containing the following keys:
+     *   - 'authorisationCode' (string): The authorization code.
+     *   - 'firstname' (string): The first name of the loan applicant.
+     *   - 'lastname' (string): The last name of the loan applicant.
+     *   - 'middlename' (string): The middle name of the loan applicant.
+     *   - 'accountNumber' (string): The account number of the loan applicant.
+     *   - 'bankCode' (string): The bank code of the loan applicant.
+     *   - 'bvn' (string): The Bank Verification Number (BVN) of the loan applicant.
+     *   - 'authorisationChannel' (string): The authorization channel used.
+     *
+     * @return mixed
+     *
+     * @throws GuzzleException
+     */
+    public function getSalaryHistory(array $requestData = [])
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -153,6 +175,28 @@ class RemitaService
         return $this->makeRequest('POST', $uri, $headers, $data,$requestLog);
     }
 
+
+    /**
+     * Get loan disburstment notification
+     *
+     * @param array $requestData An array containing the following keys:
+     *   - 'customerId' (string):
+     *   - 'authorisationCode' (string):
+     *   - 'authorisationChannel' (string):
+     *   - 'phoneNumber' (string):
+     *   - 'accountNumber' (string):
+     *   - 'currency' (string):
+     *   - 'loanAmount' (string):
+     *   - 'collectionAmount' (string):
+     *   - 'disbursementDate' (string):
+     *   - 'totalCollectionAmount' (string):
+     *   - 'numberOfRepayments' (string):
+     *   - 'bankCode' (string):
+     *
+     * @return mixed
+     *
+     * @throws GuzzleException
+     */
     public function loanDisburstmentNotification($requestData = [])
     {
         $headers = [
@@ -192,6 +236,18 @@ class RemitaService
         return $this->makeRequest('POST', $uri, $headers, $data,$requestLog);
     }
 
+    /**
+     * Get loan disburstment notification
+     *
+     * @param array $requestData An array containing the following keys:
+     *   - 'authorisationCode' (string):
+     *   - 'customerId' (string):
+     *   - 'mandateReference' (string):
+     *
+     * @return mixed
+     *
+     * @throws GuzzleException
+     */
     public function mandateHistory($requestData = [])
     {
         $headers = [
@@ -221,6 +277,18 @@ class RemitaService
         return $this->makeRequest('POST', $uri, $headers, $data, $requestLog);
     }
 
+    /**
+     * Get loan disburstment notification
+     *
+     * @param array $requestData An array containing the following keys:
+     *   - 'authorisationCode' (string):
+     *   - 'customerId' (string):
+     *   - 'mandateReference' (string):
+     *
+     * @return mixed
+     *
+     * @throws GuzzleException
+     */
     public function stopLoanCollection($requestData = [])
     {
         $headers = [
