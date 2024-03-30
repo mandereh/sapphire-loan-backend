@@ -38,5 +38,10 @@ return [
     'giro' => [
         'base_uri' => env('GIRO_BASE_URI'),
         'apiKey' => env('GIRO_API_KEY'),
+    ],
+    'digisign' => [
+        'baseUri' => env('DIGISIGN_BASE_URI'),
+        'apiKey' => env('DIGISIGN_API_KEY'),
     ]
+
 ];
