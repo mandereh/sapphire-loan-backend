@@ -2,6 +2,7 @@
 
 namespace App\ExternalServices;
 
+use App\Models\RequestLog;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
@@ -83,7 +84,7 @@ class RemitaService
         return "remitaConsumerKey={$this->apiKey},remitaConsumerToken={$this->apiHash}";
     }
 
-    private function makeRequest($method, $uri, $headers = [], $data = [])
+    private function makeRequest(String $method,String $uri,array $headers = [],array $data = [], array $requestLog = [])
     {
         $cacheKey = md5($uri . json_encode($data));
         $cacheDuration = now()->addMinutes(60);
@@ -93,12 +94,24 @@ class RemitaService
         }
 
         try {
+            $request_log = new RequestLog();
+
+            $request_log->request_type = $method;
+            $request_log->narration = $requestLog['narration'];
+            $request_log->source = $requestLog['source'];
+            $request_log->end_point = $requestLog['endpoint'];
+            $request_log->tran_id = $requestLog['time'];
+            $request_log->request_payload = json_encode($data);
+
             $response = $this->client->request($method, $uri, [
                 'headers' => $headers,
                 'json' => $data
             ]);
+
             $responseData = json_decode($response->getBody()->getContents(), true);
             Cache::put($cacheKey, $responseData, $cacheDuration);
+            $request_log->response_payload = json_encode($responseData);
+            $request_log->save();
             return $responseData;
         } catch (GuzzleException $e) {
             // Handle exception
@@ -126,9 +139,18 @@ class RemitaService
             'bvn' => $requestData['bvn'],
             'authorisationChannel' => $requestData['authorisationChannel']
         ];
+        $endpoint = "/loansvc/data/api/v2/payday/salary/history/provideCustomerDetails";
+        $uri = $this->baseUri . '/' . $endpoint;
+        $time = time();
+        $requestLog = [
+            'uri' => $uri,
+            'endpoint' => $endpoint,
+            'tran_id' => $time,
+            'narration' => 'get the salary history of the loan applicant',
+        ];
 
 
-        return $this->makeRequest('POST', $this->baseUri . "/loansvc/data/api/v2/payday/salary/history/provideCustomerDetails", $headers, $data);
+        return $this->makeRequest('POST', $uri, $headers, $data,$requestLog);
     }
 
     public function loanDisburstmentNotification($requestData = [])
@@ -157,7 +179,17 @@ class RemitaService
             "bankCode" => $requestData["bankCode"]
         ];
 
-        return $this->makeRequest('POST', "{$this->baseUri}/loansvc/data/api/v2/payday/post/loan", $headers, $data);
+        $endpoint = "/loansvc/data/api/v2/payday/post/loan";
+        $uri = $this->baseUri . '/' . $endpoint;
+        $time = time();
+        $requestLog = [
+            'uri' => $uri,
+            'endpoint' => $endpoint,
+            'tran_id' => $time,
+            'narration' => 'utilized to let remita know about the relevant details about the loan.',
+        ];
+
+        return $this->makeRequest('POST', $uri, $headers, $data,$requestLog);
     }
 
     public function mandateHistory($requestData = [])
@@ -176,7 +208,17 @@ class RemitaService
             "mandateRef" => $requestData["mandateReference"]
         ];
 
-        return $this->makeRequest('POST', "{$this->baseUri}/loansvc/data/api/v2/payday/loan/payment/history", $headers, $data);
+        $endpoint = "/loansvc/data/api/v2/payday/loan/payment/history";
+        $uri = $this->baseUri . '/' . $endpoint;
+        $time = time();
+        $requestLog = [
+            'uri' => $uri,
+            'endpoint' => $endpoint,
+            'tran_id' => $time,
+            'narration' => 'mandate history',
+        ];
+
+        return $this->makeRequest('POST', $uri, $headers, $data, $requestLog);
     }
 
     public function stopLoanCollection($requestData = [])
@@ -190,11 +232,21 @@ class RemitaService
             'Authorization' => $this->accessToken,
         ];
         $data = [
-            "authorisationCode" => ["authorisationCode"],
-            "customerId" => ["customerId"],
-            "mandateReference" => ["mandateReference"]
+            "authorisationCode" => $requestData["authorisationCode"],
+            "customerId" => $requestData["customerId"],
+            "mandateReference" => $requestData["mandateReference"]
         ];
 
-        return $this->makeRequest('POST', "{$this->baseUri}/loansvc/data/api/v2/payday/stop/loan", $headers, $data);
+        $endpoint = "/loansvc/data/api/v2/payday/stop/loan";
+        $uri = $this->baseUri . '/' . $endpoint;
+        $time = time();
+        $requestLog = [
+            'uri' => $uri,
+            'endpoint' => $endpoint,
+            'tran_id' => $time,
+            'narration' => 'stop loan collection',
+        ];
+
+        return $this->makeRequest('POST', $uri, $headers, $data, $requestLog);
     }
 }
