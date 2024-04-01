@@ -70,4 +70,9 @@ class User extends Authenticatable
             return $pr['name'];
         });
     }
+
+    public function leads()
+    {
+        return $this->hasMany(Lead::class);
+    }
 }

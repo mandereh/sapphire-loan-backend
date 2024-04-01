@@ -10,6 +10,16 @@ class Lead extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+            'name',
+            'phone_number',
+            'account_number',
+            'ippis_number',
+            'organization_name',
+            'state_name',
+            'city_name',
+    ];
+
     /**
      * Get the salesOfficer that owns the Lead
      *
@@ -19,4 +29,6 @@ class Lead extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+
 }

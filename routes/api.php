@@ -25,7 +25,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
 });
 Route::post('/leads/upload-lead', [LeadController::class, 'uploadLeads'])->name('leads.uploadLeads');
 Route::post('/leads/reassign-lead', [LeadController::class, 'reassignLead'])->name('leads.reassignLead');
-Route::post('/leads/delete-lead', [LeadController::class, 'uploadLeads'])->name('leads.deleteLeads');
-Route::post('/leads/view-leads-by-Account-officer', [LeadController::class, 'viewLeadsByAccountOfficer'])->name('leads.viewLeadsByAccountOfficer');
+Route::post('/leads/delete-lead', [LeadController::class, 'deleteLeads'])->name('leads.deleteLeads');
+Route::get('/users/{user}/view-leads-by-Account-officer', [LeadController::class, 'viewLeadsByAccountOfficer'])->name('leads.viewLeadsByAccountOfficer');
+Route::get('/leads/view-all-leads', [LeadController::class, 'viewAllLeads'])->name('leads.viewAllLeads');
 
 Route::post('/collection-notification', [RemitaCollectionNotificationWebhookController::class, 'handleCollectionNotification']);
