@@ -1,5 +1,8 @@
 <?php
 
+
+
+
 return [
 
     /*
@@ -122,5 +125,13 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+//    'providers' => [
+//        Maatwebsite\Excel\ExcelServiceProvider::class,
+//    ],
+//
+//    'aliases' => [
+//        Excel::class => Maatwebsite\Excel\Facades\Excel::class,
+//    ],
 
 ];

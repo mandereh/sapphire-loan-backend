@@ -2,6 +2,7 @@
 
 namespace App\ExternalServices;
 
+use App\Models\RequestLog;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Carbon;
@@ -62,7 +63,7 @@ class DigisignService
         }
     }
 
-    public function makeRequest($method, $uri, $headers, $queryParam = [], $formParam = [], $data = [])
+    public function makeRequest($method, $uri, $headers = [], $queryParam = [], $formParam = [], $data = [], array $requestLog = [])
     {
         $cacheKey = md5($uri . json_encode($data));
         $cacheDuration = now()->addMinutes(60);
@@ -71,6 +72,16 @@ class DigisignService
             return Cache::get($cacheKey);
         }
         try {
+
+            $request_log = new RequestLog();
+
+            $request_log->request_type = $method;
+            $request_log->narration = $requestLog['narration'];
+            $request_log->source = $requestLog['source'];
+            $request_log->end_point = $requestLog['endpoint'];
+            $request_log->tran_id = $requestLog['time'];
+            $request_log->request_payload = json_encode($data);
+
             $response = $this->client->request($method, $uri, [
                 'headers' => $headers,
                 'query' => $queryParam,
@@ -79,6 +90,10 @@ class DigisignService
             ]);
             $responseData = json_decode($response->getBody()->getContents(), true);
             Cache::put($cacheKey, $responseData, $cacheDuration);
+
+            $request_log->response_payload = json_encode($responseData);
+            $request_log->save();
+
             return $responseData;
         } catch (GuzzleException $e) {
             throw $e;

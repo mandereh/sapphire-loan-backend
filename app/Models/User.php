@@ -73,11 +73,17 @@ class User extends Authenticatable
         });
     }
 
+<<<<<<< HEAD
     protected function refferalCode(): Attribute
     {
         $lastCode = User::all()->last()->refferal_code ?? 100000;
         return new Attribute(
             set: fn () => $lastCode++,
         );
+=======
+    public function leads()
+    {
+        return $this->hasMany(Lead::class);
+>>>>>>> origin/main
     }
 }

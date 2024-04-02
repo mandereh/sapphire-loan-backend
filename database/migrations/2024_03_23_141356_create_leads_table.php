@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('organization_name')->nullable();
             $table->string('state_name')->nullable();
             $table->string('city_name')->nullable();
+            $table->foreignIdFor(\App\Models\User::class,'user_id')->nullable();
             $table->timestamps();
         });
     }
