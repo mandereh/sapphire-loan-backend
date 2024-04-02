@@ -23,7 +23,8 @@ class AdminSeeder extends Seeder
             'email' => 'cbekenawei@gmail.com',
             'phone_number' => '08061148035',
             'password' => Hash::make('Password1'),
-            'active' => true
+            'active' => true,
+            'refferal_code' => 0
         ]);
 
         $adminUser->email_verified_at = now();

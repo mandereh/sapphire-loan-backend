@@ -11,7 +11,7 @@ class ApplyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,17 @@ class ApplyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'loan_type' => 'required|numeric|exists:loan_types,id',
+            'organization' => 'required|numeric:exists:organizations:id',
+            'amount' => 'required|numeric',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string',
+            'zipcode' => 'required|string',
+            'account_number' => 'required|digits:10',
+            'bank' => 'required|numeric|exists:banks,id',
+            'state' => 'required|numeric|exists:states,id',
+            'reffered_by' => 'required|numeric|exists:users,refferal_code',
+            'user_id' => 'required|numeric|exists:users,id'
         ];
     }
 }

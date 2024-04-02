@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->boolean('active');
+            $table->string('refferal_code', 10)->unique();
             $table->timestamps();
         });
 

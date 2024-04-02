@@ -118,7 +118,9 @@ class RemitaService
             'Authorization' => $this->accessToken,
         ];
 
-
+        if(app()->environment('local')){
+            return $this->dummyData();
+        }
         return $this->makeRequest('POST',$this->baseUri."/loansvc/data/api/v2/payday/salary/history/provideCustomerDetails",$headers,$data);
 
     }
@@ -166,7 +168,89 @@ class RemitaService
     }
 
 
+    private function dummyData(){
+        $monthlyPay = round(mt_rand(30000, 300000), -3);
+        $loanLength = mt_rand(1, 3);
+        $repaymentAmount = round(mt_rand(30000, 200000), -3);
 
+        $responseData = [
+            "status" => "success",
+            "hasData" => true,
+            "responseId" => "1633886042479/1633886042479",
+            "responseDate" => "10-10-2021 17:14:03+0000",
+            "requestDate" => "10-10-2021 17:14:02+0000",
+            "responseCode" => "00",
+            "responseMsg" => "SUCCESS",
+            "data" => [
+              "customerId" => "1366",
+              "accountNumber" => "5012284010",
+              "bankCode" => "023",
+              "bvn" => null,
+              "companyName" => "National Youth Secrvice Corps",
+              "customerName" => "Teresa Stoker",
+              "category" => null,
+              "firstPaymentDate" => "10-08-2020 00:00:00+0000",
+              "salaryCount" => "6",
+              "salaryPaymentDetails" => [
+                [
+                  "paymentDate" => "25-06-2021 13:33:46+0000",
+                  "amount" => $repaymentAmount,
+                  "accountNumber" => "5012284010",
+                  "bankCode" => "023"
+                ],
+                [
+                  "paymentDate" => "25-05-2021 13:33:46+0000",
+                  "amount" => $repaymentAmount,
+                  "accountNumber" => "5012284010",
+                  "bankCode" => "023"
+                ],
+                [
+                  "paymentDate" => "25-04-2021 13:33:46+0000",
+                  "amount" => $repaymentAmount,
+                  "accountNumber" => "5012284010",
+                  "bankCode" => "023"
+                ],
+                [
+                  "paymentDate" => "25-03-2021 13:33:46+0000",
+                  "amount" => $repaymentAmount,
+                  "accountNumber" => "5012284010",
+                  "bankCode" => "023"
+                ],
+                [
+                  "paymentDate" => "25-02-2021 13:33:46+0000",
+                  "amount" => $repaymentAmount,
+                  "accountNumber" => "5012284010",
+                  "bankCode" => "023"
+                ],
+                [
+                  "paymentDate" => "25-01-2021 13:33:46+0000",
+                  "amount" => $repaymentAmount,
+                  "accountNumber" => "5012284010",
+                  "bankCode" => "023"
+                ]
+              ],
+              "originalCustomerId" => "1366"
+            ]
+        ];
+
+        $times = $loanLength;
+        while($times > 0){
+            $percentPayed = mt_rand(0.05,0.9);
+            $percentPayed = $repaymentAmount * $percentPayed;
+            $responseData['loanHistoryDetails'] = [
+                "loanProvider" => "*******",
+                "loanAmount" => $repaymentAmount * 80/100,
+                "outstandingAmount" => $repaymentAmount - $percentPayed,
+                "loanDisbursementDate" => "19-08-2021 00:00:00+0000",
+                "status" => "NEW",
+                "repaymentAmount" => $repaymentAmount,
+                "repaymentFreq" => "MONTHLY"
+            ];
+            $times--;
+        }
+
+        return $responseData;
+    }
 
 
 

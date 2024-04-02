@@ -62,4 +62,15 @@ class Loan extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getUniqueReference(){
+        $ref = '';
+        while(strlen($ref) < 1){
+            $temp = 'LO'.mt_rand(1000000,10000000);
+            if(!Loan::where('reference', $temp)->first()){
+                $ref = $temp;
+            }
+        }
+        return $ref;
+    }
 }

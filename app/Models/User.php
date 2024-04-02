@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Organization;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -30,6 +31,7 @@ class User extends Authenticatable
         'password',
         'phone_number',
         'date_of_birth',
+        'refferal_code'
     ];
 
     /**
@@ -69,5 +71,13 @@ class User extends Authenticatable
         return $this->getAllPermissions()->map(function($pr){
             return $pr['name'];
         });
+    }
+
+    protected function refferalCode(): Attribute
+    {
+        $lastCode = User::all()->last()->refferal_code ?? 100000;
+        return new Attribute(
+            set: fn () => $lastCode++,
+        );
     }
 }

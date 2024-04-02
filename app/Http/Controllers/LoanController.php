@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\ExternalServices\RemitaService;
 use App\Http\Requests\ApplyRequest;
 use Illuminate\Http\Request;
 
@@ -11,8 +12,13 @@ class LoanController extends Controller
 
     public function apply(ApplyRequest $request){
         //Check Remita
+        $remitaService = new  RemitaService();
+
+        $remitaResponse = $remitaService;
 
         //Do Assessment
+
+
 
         //Create offer letter PDF
 
@@ -48,6 +54,10 @@ class LoanController extends Controller
 
     //Return loans for the logged in account officer
     public function viewLoansByAccountOfficer(){
+
+    }
+
+    public function bvnValidation(){
 
     }
 }

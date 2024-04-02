@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignIdFor(LoanType::class, 'loan_type_id');
             $table->foreignIdFor(Organization::class, 'organization_id');
             $table->foreignIdFor(User::class, 'user_id');
-            $table->foreignIdFor(User::class, 'relationship_manager_id');
+            $table->foreignIdFor(User::class, 'relationship_manager_id')->nullable();
             $table->decimal('amount', 11, 2);
             $table->decimal('approved_amount', 11, 2)->default(0);
             $table->decimal('balance', 11, 2)->default(0);

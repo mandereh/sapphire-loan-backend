@@ -5,6 +5,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/user/register', [UserController::class, 'register']);
+
 Route::post('/user/login', [UserController::class, 'token']);
 
 Route::get('/user', function (Request $request) {
