@@ -84,14 +84,14 @@ class RemitaService
         return "remitaConsumerKey={$this->apiKey},remitaConsumerToken={$this->apiHash}";
     }
 
-    private function makeRequest(String $method,String $uri,array $headers = [],array $queryParam = [],array $formParam = [],array $data = [], array $requestLog = [])
+    private function makeRequest($method,$uri,$headers = [],$queryParam = [],$formParam = [],$data ,$requestLog)
     {
-        $cacheKey = md5($uri . json_encode($data));
-        $cacheDuration = now()->addMinutes(60);
+//        $cacheKey = md5($uri . json_encode($data));
+//        $cacheDuration = now()->addMinutes(60);
 
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
+//        if (Cache::has($cacheKey)) {
+//            return Cache::get($cacheKey);
+//        }
 
         try {
             $request_log = new RequestLog();
@@ -100,8 +100,13 @@ class RemitaService
             $request_log->narration = $requestLog['narration'];
             $request_log->source = $requestLog['source'];
             $request_log->end_point = $requestLog['endpoint'];
-            $request_log->tran_id = $requestLog['time'];
+//            $request_log->tran_id = $requestLog['time'];
             $request_log->request_payload = json_encode($data);
+
+//            $sentData = [];
+//            $sentData["headers"] = $headers;
+//            $sentData["query"] = $data;
+//            return $sentData;
 
             $response = $this->client->request($method, $uri, [
                 'headers' => $headers,
@@ -112,7 +117,7 @@ class RemitaService
 
             $responseData = json_decode($response->getBody()->getContents(), true);
 
-            Cache::put($cacheKey, $responseData, $cacheDuration);
+//            Cache::put($cacheKey, $responseData, $cacheDuration);
 
             $request_log->response_payload = json_encode($responseData);
             $request_log->save();
@@ -141,7 +146,7 @@ class RemitaService
      *
      * @throws GuzzleException
      */
-    public function getSalaryHistory(array $requestData = [])
+    public function getSalaryHistory(array $requestData)
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -149,30 +154,31 @@ class RemitaService
             'MERCHANT_ID' => $this->merchantId,
             'REQUEST_ID' => $this->requestId,
             'AUTHORIZATION' => $this->authorization,
-            'Authorization' => $this->accessToken,
         ];
         $data = [
             'authorisationCode' => $requestData['authorisationCode'],
-            'firstname' => $requestData['firstname'],
-            'lastname' => $requestData['lastname'],
-            'middlename' => $requestData['middlename'],
+            'firstName' => $requestData['firstName'],
+            'lastName' => $requestData['lastName'],
+            'middleName' => $requestData['middleName'],
             'accountNumber' => $requestData['accountNumber'],
             'bankCode' => $requestData['bankCode'],
             'bvn' => $requestData['bvn'],
             'authorisationChannel' => $requestData['authorisationChannel']
         ];
+
         $endpoint = "/loansvc/data/api/v2/payday/salary/history/provideCustomerDetails";
-        $uri = $this->baseUri . '/' . $endpoint;
+        $uri = $this->baseUri . $endpoint;
         $time = time();
         $requestLog = [
             'uri' => $uri,
             'endpoint' => $endpoint,
-            'tran_id' => $time,
-            'narration' => 'get the salary history of the loan applicant',
+            'time' => $time,
+            'source'=>'',
+            'narration' => "get the salary history of the loan applicant",
         ];
 
 
-        return $this->makeRequest('POST', $uri, $headers, $data,$requestLog);
+        return $this->makeRequest('POST', $uri,$headers,[],[], $data,$requestLog);
     }
 
 
@@ -197,7 +203,7 @@ class RemitaService
      *
      * @throws GuzzleException
      */
-    public function loanDisburstmentNotification($requestData = [])
+    public function loanDisburstmentNotification(array $requestData)
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -224,7 +230,7 @@ class RemitaService
         ];
 
         $endpoint = "/loansvc/data/api/v2/payday/post/loan";
-        $uri = $this->baseUri . '/' . $endpoint;
+        $uri = $this->baseUri . $endpoint;
         $time = time();
         $requestLog = [
             'uri' => $uri,
@@ -233,7 +239,7 @@ class RemitaService
             'narration' => 'utilized to let remita know about the relevant details about the loan.',
         ];
 
-        return $this->makeRequest('POST', $uri, $headers, $data,$requestLog);
+        return $this->makeRequest('POST', $uri, $headers,[],[], $data,$requestLog);
     }
 
     /**
@@ -248,7 +254,7 @@ class RemitaService
      *
      * @throws GuzzleException
      */
-    public function mandateHistory($requestData = [])
+    public function mandateHistory(array $requestData)
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -265,7 +271,7 @@ class RemitaService
         ];
 
         $endpoint = "/loansvc/data/api/v2/payday/loan/payment/history";
-        $uri = $this->baseUri . '/' . $endpoint;
+        $uri = $this->baseUri . $endpoint;
         $time = time();
         $requestLog = [
             'uri' => $uri,
@@ -274,7 +280,7 @@ class RemitaService
             'narration' => 'mandate history',
         ];
 
-        return $this->makeRequest('POST', $uri, $headers, $data, $requestLog);
+        return $this->makeRequest('POST', $uri, $headers,[],[], $data, $requestLog);
     }
 
     /**
@@ -289,7 +295,7 @@ class RemitaService
      *
      * @throws GuzzleException
      */
-    public function stopLoanCollection($requestData = [])
+    public function stopLoanCollection(array $requestData)
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -306,7 +312,7 @@ class RemitaService
         ];
 
         $endpoint = "/loansvc/data/api/v2/payday/stop/loan";
-        $uri = $this->baseUri . '/' . $endpoint;
+        $uri = $this->baseUri . $endpoint;
         $time = time();
         $requestLog = [
             'uri' => $uri,
@@ -315,6 +321,6 @@ class RemitaService
             'narration' => 'stop loan collection',
         ];
 
-        return $this->makeRequest('POST', $uri, $headers, $data, $requestLog);
+        return $this->makeRequest('POST', $uri, $headers,[],[], $data, $requestLog);
     }
 }

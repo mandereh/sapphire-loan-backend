@@ -7,6 +7,9 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
+Route::post('/remita/getSalaryHistory',[\App\Http\Controllers\ApiTestController::class,'getRemitaSalaryHistory']);
+
 Route::post('/user/login', [UserController::class, 'token'])->name('login');
 
 Route::get('/user', function (Request $request) {
