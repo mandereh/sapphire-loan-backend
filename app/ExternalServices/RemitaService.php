@@ -103,10 +103,7 @@ class RemitaService
 //            $request_log->tran_id = $requestLog['time'];
             $request_log->request_payload = json_encode($data);
 
-//            $sentData = [];
-//            $sentData["headers"] = $headers;
-//            $sentData["query"] = $data;
-//            return $sentData;
+
 
             $response = $this->client->request($method, $uri, [
                 'headers' => $headers,
@@ -216,10 +213,10 @@ class RemitaService
         $data = [
             "customerId" => $requestData["customerId"],
             "authorisationCode" => $requestData["authorisationCode"],
-            "authorisationChannel" => $requestData["USSD"],
+            "authorisationChannel" => $requestData["authorisationChannel"],
             "phoneNumber" => $requestData["phoneNumber"],
             "accountNumber" => $requestData["accountNumber"],
-            "currency" => $requestData["NGN"],
+            "currency" => $requestData["currency"],
             "loanAmount" => $requestData["loanAmount"],
             "collectionAmount" => $requestData["collectionAmount"],
             "dateOfDisbursement" => $requestData["disbursementDate"],
@@ -235,7 +232,8 @@ class RemitaService
         $requestLog = [
             'uri' => $uri,
             'endpoint' => $endpoint,
-            'tran_id' => $time,
+            'time' => $time,
+            'source'=>'',
             'narration' => 'utilized to let remita know about the relevant details about the loan.',
         ];
 
@@ -276,7 +274,8 @@ class RemitaService
         $requestLog = [
             'uri' => $uri,
             'endpoint' => $endpoint,
-            'tran_id' => $time,
+            'source'=>'',
+//            'tran_id' => $time,
             'narration' => 'mandate history',
         ];
 
@@ -317,7 +316,8 @@ class RemitaService
         $requestLog = [
             'uri' => $uri,
             'endpoint' => $endpoint,
-            'tran_id' => $time,
+            'source' => '',
+//            'tran_id' => $time,
             'narration' => 'stop loan collection',
         ];
 
