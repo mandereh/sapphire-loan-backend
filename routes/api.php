@@ -21,6 +21,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/user/register', [UserController::class, 'register']);
 
+Route::post('/remita/getSalaryHistory',[\App\Http\Controllers\ApiTestController::class,'getRemitaSalaryHistory']);
+Route::post('/remita/loanDisburstmentNotification',[\App\Http\Controllers\ApiTestController::class,'loanDisburstmentNotificationController']);
+Route::post('/remita/mandateHistory',[\App\Http\Controllers\ApiTestController::class,'mandateHistoryController']);
+Route::post('/remita/stopLoanCollection',[\App\Http\Controllers\ApiTestController::class,'stopLoanCollectionController']);
+
 Route::post('/user/login', [UserController::class, 'token'])->name('login');
 
 Route::get('/user', [UserController::class, 'userDetails'])->middleware('auth:sanctum');

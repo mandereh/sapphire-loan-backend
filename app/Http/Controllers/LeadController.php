@@ -15,9 +15,15 @@ class LeadController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function uploadLeads(Request $request){
-        $request->validate([
+
+        $validator = Validator::make($request->all(),[
             'file' => 'required|mimes:xls,xlsx,csv|max:2048',
         ]);
+
+        if ($validator->fails()){
+            return response()->json(['errors' => $validator->errors()]);
+        }
+
         $file = $request->file('file');
         $spreadsheet = IOFactory::load($file);
         $worksheet = $spreadsheet->getActiveSheet();
