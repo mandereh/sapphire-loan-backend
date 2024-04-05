@@ -15,20 +15,22 @@ class LoanTypeSeeder extends Seeder
     {
         //
         DB::table('loan_types')->insert([
-            'name' => 'Cash Loan',
-            'cute_name' => 'I want cash',
-            'active' => true,
-            'rate' => 5,
-            'dti' => 50,
-            'fees' => 0
-        ],
-        [
-            'name' => 'Asset Loan', 
-            'active' => true, 
-            'cute_name' => 'I want a Phone',
-            'rate' => 5,
-            'dti' => 50,
-            'fees' => 0
+            [
+                'name' => 'Cash Loan',
+                'cute_name' => 'I want cash',
+                'active' => true,
+                'rate' => 5,
+                'dti' => 50,
+                'fees' => 0
+            ],
+            [
+                'name' => 'Asset Loan', 
+                'active' => true, 
+                'cute_name' => 'I want a Phone',
+                'rate' => 5,
+                'dti' => 50,
+                'fees' => 0
+            ]
         ]
             // ['name' => 'Salary', 'status' => 'enabled'],
             // ['name' => 'Business', 'status' => 'enabled']

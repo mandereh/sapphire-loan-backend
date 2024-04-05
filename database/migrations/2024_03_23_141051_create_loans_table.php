@@ -33,7 +33,7 @@ return new class extends Migration
             $table->string('city');
             $table->string('zipcode', 10);
             $table->string('salary_account_number');
-            $table->foreignIdFor(Bank::class, 'bank_id');
+            $table->string('bank_code');
             $table->foreignIdFor(State::class, 'state_id');
             $table->foreignIdFor(User::class, 'reffered_by_id')->nullable();
             $table->timestamp('approved_at')->nullable();

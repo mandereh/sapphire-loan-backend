@@ -29,10 +29,11 @@ class ApplyRequest extends FormRequest
             'city' => 'required|string',
             'zipcode' => 'required|string',
             'account_number' => 'required|digits:10',
-            'bank' => 'required|numeric|exists:banks,id',
+            'bank_code' => 'required|numeric',
             'state' => 'required|numeric|exists:states,id',
             'reffered_by' => 'required|numeric|exists:users,refferal_code',
-            'user_id' => 'required|numeric|exists:users,id'
+            'user_id' => 'required|numeric|exists:users,id',
+            'tenor' => 'required|numeric|min:1'
         ];
     }
 }

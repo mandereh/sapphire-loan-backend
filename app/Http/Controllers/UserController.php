@@ -14,7 +14,21 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function register(RegisterRequest $request){
+
+
+    public function userDetails(Request $request){
+        $resp = [
+            'status_code' => '00',
+            'message' => "User details retrieved",
+            'data' => $request->user()
+        ];
+
+        $statusCode = 200;
+
+        return response($resp, $statusCode);
+    }
+
+    public function register(Request $request){
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -47,12 +61,16 @@ class UserController extends Controller
         $user = User::where('ippis_number', $request->ippis)->first();
 
         if($user){
+            $statusCode = 200;
+
             $resp = [
                 'status_code' => '00',
                 'message' => "User exists",
                 'data' => $user
             ];
         }else{
+            $statusCode = 404;
+
             $resp = [
                 'status_code' => '40',
                 'message' => "User does not exist",
@@ -60,13 +78,13 @@ class UserController extends Controller
             ];
         }
 
-        $statusCode = 200;
+        // dd($resp);
 
-        return response($resp, $statusCode);
+        return response()->json($resp, $statusCode);
     }
 
     //
-    public function token(LoginUserRequest $request){
+    public function token(Request $request){
 
         // $sourceApp =  AppAccessToken::where('app_name', $request->input("appName", $request->header('appname')))->first();
 
@@ -109,7 +127,7 @@ class UserController extends Controller
 
         $statusCode = 200;
 
-        return response($resp, $statusCode);
+        return response()->json($resp, $statusCode);
     }
 
     public function viewAllUsers(){

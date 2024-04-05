@@ -73,4 +73,42 @@ class Loan extends Model
         }
         return $ref;
     }
+
+    public function calculateOffer(Array $remitaResponseData) : float{
+        $averageMonthlySalary = 0;
+
+        if(is_array($remitaResponseData['salaryPaymentDetails'])){
+            $averageMonthlySalary = array_reduce($remitaResponseData['salaryPaymentDetails'], function($total, $item){
+                return $total+= $item['amount'];
+            });
+        }
+
+        $totalAverageSalary = $averageMonthlySalary * $this->tenor;
+
+        $totalLoanOutstanding = 0;
+
+        if(is_array($remitaResponseData['loanHistoryDetails'])){
+            $totalLoanOutstanding = array_reduce($remitaResponseData['loanHistoryDetails'], function($total, $item){
+                return $total+= $item['amount'];
+            });
+        }
+
+        $totalRepaymentAmount = 0;
+
+        if(is_array($remitaResponseData['loanHistoryDetails'])){
+            $totalRepaymentAmount = array_reduce($remitaResponseData['loanHistoryDetails'], function($total, $item){
+                return $total+= $item['repaymentAmount'];
+            });
+        }
+
+        $disposableIncome = $averageMonthlySalary - $totalRepaymentAmount;
+
+        $netOfferAmount = $disposableIncome - 10000;
+
+        $loanType = LoanType::find($this->loan_type);
+
+        $offerAmount = $netOfferAmount - ($netOfferAmount * ($loanType->rate/100));
+
+        return $offerAmount;
+    }
 }
