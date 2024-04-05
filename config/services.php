@@ -30,5 +30,8 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
+    'giro' => [
+        'base_uri' => env('GIRO_BASE_URI'),
+        'api_key' => env('GIRO_API_KEY'),
+    ],
 ];

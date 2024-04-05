@@ -14,7 +14,7 @@ class GiroService
     public function __construct()
     {
         $this->baseUrl = config('services.giro.base_uri');
-        $this->secretKey = config('services.giro.apiKey');
+        $this->secretKey = config('services.giro.api_key');
     }
 
     public function getBanks(String $source)
