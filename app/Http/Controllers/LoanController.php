@@ -2,27 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\Status;
-use App\ExternalServices\RemitaService;
+use App\ExternalServices\GiroService;
 use App\Http\Requests\ApplyRequest;
 use App\Http\Requests\UpdateLoanTypeRequest;
+use App\Http\Requests\ValidateBankAccountRequest;
+use App\Jobs\ProcessLoanJob;
 use App\Models\Loan;
 use App\Models\LoanType;
 use App\Models\Organization;
 use App\Models\State;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redis;
 
 class LoanController extends Controller
 {
     //
 
+    public function listLoans(Request $request){
+        $loans = new Loan();
+
+        if($request->filterStatus){
+            $loans = $loans->where('status', $request->statusFilter);
+        }
+
+        if($request->filterLoanType){
+            $loans = $loans->whereHas('loan_type_id', $request->filterLoanType);
+        }
+
+        $loans = $loans->paginate();
+
+        $resp = [
+            'status_code' => '00',
+            'message' => "Retrieved loans Successfully",
+            'data' => $loans
+        ];
+        
+
+        $statusCode = 200;
+
+        return response($resp, $statusCode);
+    }
+
     public function apply(ApplyRequest $request){
-        //Check Remita
-        $remitaService = new  RemitaService();
-
-        $remitaResponse = $remitaService->getSalaryHistory([]);
-
         $loan = new Loan();
 
         $loan->tenor = $request->tenor;
@@ -53,31 +73,19 @@ class LoanController extends Controller
 
         $loan->amount = $request->amount;
 
-        if($remitaResponse && $remitaResponse['responseCode'] == "00"){
-            if($remitaResponse['hasData']){
-                //Do Assessment
-                $offer = $loan->calculateOffer($remitaResponse['data']);
+        $loan->save();
 
-                dd($offer);
-                //Create offer letter PDF
+        ProcessLoanJob::dispatch($loan)
+                            ->onQueue('repayments');
 
+        $resp = [
+            'status_code' => '00',
+            'message' => "Loan submitted Successfully",
+        ];
 
-                //Email Offer with link to digisign else Email no offer available
-            }else{
-                // no history for this
-                $loan->status = Status::FAILED;
+        $statusCode = 200;
 
-                $loan->failure_reason = 'No salary history';
-            }
-        }else{
-            //Update to status failed
-
-            //
-            $loan->status = Status::FAILED;
-
-            $loan->failure_reason = 'Error retrieving salary history';
-        }
-
+        return response($resp, $statusCode);
     }
 
     public function listStates(){
@@ -133,6 +141,54 @@ class LoanController extends Controller
 
         $statusCode = 200;
 
+        return response($resp, $statusCode);
+    }
+
+    public function listBanks(){
+        $giroService = new GiroService();
+
+        $banksResponse = $giroService->getBanks('staffPortal');
+
+        if(isset($banksResponse['meta']) && $banksResponse['meta']['statusCode'] == 200 && $banksResponse['meta']['success']){
+            $resp = [
+                'status_code' => '00',
+                'message' => "Banks retrieved Successfully",
+                'data' => $banksResponse['data']
+            ];
+    
+            $statusCode = 200;
+        }else{
+            $resp = [
+                'status_code' => '50',
+                'message' => "Something went wrong",
+            ];
+    
+            $statusCode = 500;
+        }
+        return response($resp, $statusCode);
+    }
+
+    public function validateBankAccount(ValidateBankAccountRequest $request){
+        $giroService = new GiroService();
+
+        $validateAccountResponse = $giroService->validateBankAccount('staffPortal', $request->account_number, $request->bank_code);
+
+        if(isset($validateAccountResponse['meta']) && $validateAccountResponse['meta']['statusCode'] == 200 && $validateAccountResponse['meta']['success']){
+            $resp = [
+                'status_code' => '00',
+                'message' => "Account Details retrieved Successfully",
+                'data' => $validateAccountResponse['data']
+            ];
+    
+            $statusCode = 200;
+        }else{
+            $resp = [
+                'status_code' => '50',
+                'message' => "Something went wrong! Failed to validate account",
+            ];
+    
+            $statusCode = 500;
+        }
         return response($resp, $statusCode);
     }
 

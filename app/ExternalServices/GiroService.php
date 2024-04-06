@@ -3,18 +3,21 @@
 namespace App\ExternalServices;
 
 use App\Models\RequestLog;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class GiroService
 {
     protected String $secretKey;
     protected String $baseUrl;
+    protected String $sourceAccount;
 
 
     public function __construct()
     {
         $this->baseUrl = config('services.giro.base_uri');
         $this->secretKey = config('services.giro.api_key');
+        $this->sourceAccount = config('services.giro.source_account');
     }
 
     public function getBanks(String $source)
@@ -29,19 +32,32 @@ class GiroService
         $request_log->narration = 'Getting list of banks';
         $request_log->source = $source;
         $request_log->end_point = $url;
-        $request_log->tran_id = time();
         $request_log->request_payload = json_encode([]);
 
+        // Cache::forget('giroBanks');
 
-        $response = Http::withHeaders([
-            'Accept' => 'application/json',
-            'x-giro-key' => $this->secretKey,
-        ])->get($url);
+        $responseBody = Cache::get('giroBanks');
 
-        $request_log->response_payload = $response->body();
-        $request_log->save();
+        // dd($responseBody);
+        if($responseBody == null){
+            // dd('okpor');
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+                'x-giro-key' => $this->secretKey,
+            ])->get($url);
 
-        return json_decode($response->body(), true);
+            $responseBody = $request_log->response_payload = $response->body();
+    
+            $reponseDecoded = json_decode($response->body(), true);
+
+            if(isset($reponseDecoded['meta']) && $reponseDecoded['meta']['statusCode'] == 200 && $reponseDecoded['meta']['success']){
+                Cache::put('giroBanks', $response->body(), 60 * 24);
+            }
+
+            $request_log->save();
+        }
+       
+        return json_decode($responseBody, true);
     }
 
     public function getBankAccounts(String $source)
@@ -112,21 +128,33 @@ class GiroService
         ];
 
         $request_log->request_type = "post";
-        $request_log->narration = "Validation account number $accountNumber";
+        $request_log->narration = "Validation account number $accountNumber for bank $bankCode";
         $request_log->source = $source;
         $request_log->end_point = $url;
-        $request_log->tran_id = time();
         $request_log->request_payload = json_encode($requestData);
 
-        $response = Http::withHeaders([
-            'Accept' => 'application/json',
-            'x-giro-key' => $this->secretKey,
-        ])->post($url, $requestData);
+        $responseBody = Cache::get("giroValidateAccount-$accountNumber-$bankCode");
 
-        $request_log->response_payload = $response->body();
-        $request_log->save();
+        // dd($responseBody);
+        if($responseBody == null){
+            // dd('okpor');
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+                'x-giro-key' => $this->secretKey,
+            ])->post($url, $requestData);
 
-        return json_decode($response->body(), true);
+            $responseBody = $request_log->response_payload = $response->body();
+    
+            $reponseDecoded = json_decode($response->body(), true);
+
+            if(isset($reponseDecoded['meta']) && $reponseDecoded['meta']['statusCode'] == 200 && $reponseDecoded['meta']['success']){
+                Cache::put("giroValidateAccount-$accountNumber-$bankCode", $response->body(), 60 * 24);
+            }
+
+            $request_log->save();
+        }
+       
+        return json_decode($responseBody, true);
     }
 
     public function fundTransfer(String $source, String $accountNumber, String $bankCode, String $sourceAccount, float $amount, String $narration, String $reference)
@@ -140,7 +168,7 @@ class GiroService
         $requestData = [
             "accountNumber" => $accountNumber,
             "bankCode" => $bankCode,
-            "sourceAccount" => $source,
+            "sourceAccount" => $this->sourceAccount,
             "amount" => $amount,
             "narration" => $narration,
             "reference" => $reference

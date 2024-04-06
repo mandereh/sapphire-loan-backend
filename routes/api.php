@@ -54,10 +54,13 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
     
     Route::put('/loanTypes/{loanType}/update', [LoanController::class, 'updateLoanType'])->name('loanTypes.update');
 
+    Route::get('/loans', [LoanController::class, 'listLoans'])->name('loans.list');
 });
 
 Route::get('/states', [LoanController::class, 'listStates'])->name('states.list');
 Route::get('/loanTypes', [LoanController::class, 'listLoanTypes'])->name('loanTypes.list');
 Route::get('/organizations', [LoanController::class, 'listOrganizations'])->name('organizations.list');
+Route::get('/banks', [LoanController::class, 'listBanks'])->name('banks.list');
+Route::post('/banks/account/validate', [LoanController::class, 'validateBankAccount'])->name('banks.account.validate');
 
 Route::post('/collection-notification', [RepaymentController::class, 'handleCollectionNotification']);

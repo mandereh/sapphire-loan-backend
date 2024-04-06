@@ -33,5 +33,6 @@ return [
     'giro' => [
         'base_uri' => env('GIRO_BASE_URI'),
         'api_key' => env('GIRO_API_KEY'),
+        'source_account' => env('GIRO_SOURCE_ACCOUNT')
     ],
 ];

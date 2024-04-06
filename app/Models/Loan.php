@@ -78,6 +78,22 @@ class Loan extends Model
         $averageMonthlySalary = 0;
 
         if(is_array($remitaResponseData['salaryPaymentDetails'])){
+            $salaryPayments = [];
+
+            foreach($remitaResponseData['salaryPaymentDetails'] as $key => $payment){
+                $previousMonth = $remitaResponseData['salaryPaymentDetails'][0]['amount'];
+
+                if($key > 0){
+                    $previousMonth = $remitaResponseData['salaryPaymentDetails'][$key - 0]['amount'];
+                }else{
+                    $salaryPayments[] = $previousMonth;
+                }
+
+                if(abs($previousMonth - $var2) > 15000){
+
+                }
+            }
+
             $averageMonthlySalary = array_reduce($remitaResponseData['salaryPaymentDetails'], function($total, $item){
                 return $total+= $item['amount'];
             });
