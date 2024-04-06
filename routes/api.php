@@ -43,15 +43,16 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
     Route::post('/user/create', [AdminController::class, 'createAdmin']);
 
     Route::post('/leads/upload-lead', [LeadController::class, 'uploadLeads'])->name('leads.uploadLeads');
-    
+
     Route::post('/leads/reassign-lead', [LeadController::class, 'reassignLead'])->name('leads.reassignLead');
 
     Route::post('/leads/delete-lead', [LeadController::class, 'deleteLeads'])->name('leads.deleteLeads');
 
+
     Route::get('/users/{user}/view-leads-by-Account-officer', [LeadController::class, 'viewLeadsByAccountOfficer'])->name('leads.viewLeadsByAccountOfficer');
 
     Route::get('/leads/view-all-leads', [LeadController::class, 'viewAllLeads'])->name('leads.viewAllLeads');
-    
+
     Route::put('/loanTypes/{loanType}/update', [LoanController::class, 'updateLoanType'])->name('loanTypes.update');
 
     Route::get('/loans', [LoanController::class, 'listLoans'])->name('loans.list');

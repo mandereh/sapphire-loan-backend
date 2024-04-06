@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Lead;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -150,5 +151,16 @@ class LeadController extends Controller
 //        }
         $leads = Lead::paginate(10);
         return response()->json($leads->toArray(), 200);
+    }
+
+    public function downloadLeadsTemplate()
+    {
+        $filePath = public_path('downloads/sapphireLoadLeadTest.xlsx');
+
+        if (!file_exists($filePath)){
+            abort(404);
+        }
+        return response()->download($filePath);
+
     }
 }
