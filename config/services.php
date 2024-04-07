@@ -35,4 +35,13 @@ return [
         'api_key' => env('GIRO_API_KEY'),
         'source_account' => env('GIRO_SOURCE_ACCOUNT')
     ],
+    'digisign' => [
+        'baseUri' => env('DIGISIGN_BASE_URI'),
+        'apiKey' => env('DIGISIGN_API_KEY')
+    ],
+    'remita' => [
+        'baseUri' => env('REMITA_BASE_URI'),
+        'username' => env('REMITA_USERNAME'),
+        'password' => env('REMITA_PASSWORD')
+    ],
 ];

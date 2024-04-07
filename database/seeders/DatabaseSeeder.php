@@ -20,5 +20,8 @@ class DatabaseSeeder extends Seeder
         $this->call(PermissionsTableSeeder::class);
         $this->call(LoanTypeSeeder::class);
         $this->call(AdminSeeder::class);
+        $this->call(PermissionsTableSeeder::class);
+        $this->call(LoanTypeSeeder::class);
+        $this->call(RolesTableSeeder::class);
     }
 }

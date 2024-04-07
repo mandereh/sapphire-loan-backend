@@ -30,7 +30,7 @@ class RemitaService
     public function __construct()
     {
         $this->client = new Client();
-        $this->baseUri = config('services.remita.base_uri');
+        $this->baseUri = config('services.remita.baseUri');
         $this->username = config('services.remita.username');
         $this->password = config('services.remita.password');
         $this->tokenExpiresAt = $this->requestAccessToken();
@@ -286,7 +286,7 @@ class RemitaService
 
         return $this->makeRequest('POST', $uri, $headers,[],[], $data, $requestLog);
     }
-    
+
     private function dummyData(){
         $monthlyPay = round(mt_rand(30000, 300000), -3);
         $loanLength = mt_rand(1, 3);
