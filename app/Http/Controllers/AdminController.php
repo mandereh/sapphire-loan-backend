@@ -63,6 +63,9 @@ class AdminController extends Controller
     }
 
     public function createAdmin(CreateAdminRequest $request){
+        $lastCode = User::latest()->first()->refferal_code ? User::latest()->first()->refferal_code :  100000;
+
+        $lastCode++;
 
         $user = User::create([
             'first_name' => $request->first_name,
@@ -70,7 +73,8 @@ class AdminController extends Controller
             'phone_number' => $request->phone_number,
             'email' => $request->email,
             'password' => Hash::make(Str::random(8)),
-            'active' => true
+            'active' => true,
+            'refferal_code' => $lastCode
         ]);
 
         // dd($request->user());

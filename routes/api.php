@@ -64,4 +64,8 @@ Route::get('/organizations', [LoanController::class, 'listOrganizations'])->name
 Route::get('/banks', [LoanController::class, 'listBanks'])->name('banks.list');
 Route::post('/banks/account/validate', [LoanController::class, 'validateBankAccount'])->name('banks.account.validate');
 
+Route::post('/user/register', [UserController::class, 'register'])->name('register');
+
+Route::post('/loan/apply', [LoanController::class, 'apply'])->name('loan.apply');
+
 Route::post('/collection-notification', [RepaymentController::class, 'handleCollectionNotification']);

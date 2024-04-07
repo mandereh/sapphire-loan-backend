@@ -17,7 +17,9 @@ class OrganizationFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name' => $this->faker->company,
+            'code' => mt_rand(100000,999999),
+            'active' => true
         ];
     }
 }

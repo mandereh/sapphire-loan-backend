@@ -28,7 +28,12 @@ class UserController extends Controller
         return response($resp, $statusCode);
     }
 
-    public function register(Request $request){
+    public function register(RegisterRequest $request){
+
+        $lastCode = User::latest()->first()->refferal_code ? User::latest()->first()->refferal_code :  100000;
+
+        $lastCode++;
+
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -39,8 +44,9 @@ class UserController extends Controller
             'gender' => $request->gender,
             'password' => Hash::make(Str::random(8)),
             'active' => true,
-            'refferal_code' => 0
+            'refferal_code' => $lastCode
         ]);
+        
 
         $resp = [
             'status_code' => '00',

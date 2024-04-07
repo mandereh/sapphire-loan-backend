@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\Status;
 use App\ExternalServices\GiroService;
 use App\Http\Requests\ApplyRequest;
 use App\Http\Requests\UpdateLoanTypeRequest;
@@ -73,10 +74,14 @@ class LoanController extends Controller
 
         $loan->amount = $request->amount;
 
+        $loan->reference = $loan->getUniqueReference();
+
+        $loan->status = Status::PROCESSING;
+
         $loan->save();
 
-        ProcessLoanJob::dispatch($loan)
-                            ->onQueue('repayments');
+        // ProcessLoanJob::dispatch($loan)
+        //                     ->onQueue('repayments');
 
         $resp = [
             'status_code' => '00',

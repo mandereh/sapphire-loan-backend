@@ -40,7 +40,7 @@ return new class extends Migration
             $table->string('status');
             $table->boolean('assesment_done')->default(false);
             $table->boolean('deduction_setup')->default(false);
-            $table->text('failure_reason');
+            $table->text('failure_reason')->nullable();
             $table->string('mandate_reference')->nullable();
             $table->softDeletes();
             $table->timestamps();

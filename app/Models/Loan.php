@@ -85,12 +85,11 @@ class Loan extends Model
 
                 if($key > 0){
                     $previousMonth = $remitaResponseData['salaryPaymentDetails'][$key - 0]['amount'];
+                    if(abs($previousMonth - $payment['amount']) > 15000){
+
+                    }
                 }else{
                     $salaryPayments[] = $previousMonth;
-                }
-
-                if(abs($previousMonth - $var2) > 15000){
-
                 }
             }
 

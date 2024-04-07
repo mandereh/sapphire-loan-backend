@@ -31,7 +31,7 @@ class ApplyRequest extends FormRequest
             'account_number' => 'required|digits:10',
             'bank_code' => 'required|numeric',
             'state' => 'required|numeric|exists:states,id',
-            'reffered_by' => 'required|numeric|exists:users,refferal_code',
+            'reffered_by' => 'nullable|numeric|exists:users,refferal_code',
             'user_id' => 'required|numeric|exists:users,id',
             'tenor' => 'required|numeric|min:1'
         ];
