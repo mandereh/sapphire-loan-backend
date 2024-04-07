@@ -29,7 +29,8 @@ class User extends Authenticatable
         'phone_number',
         'password',
         'active',
-        'refferal_code'
+        'refferal_code',
+        'ippis_number'
     ];
 
     /**
