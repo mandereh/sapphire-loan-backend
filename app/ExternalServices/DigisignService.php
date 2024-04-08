@@ -2,6 +2,7 @@
 
 namespace App\ExternalServices;
 
+use App\ExternalServices\Helpers\DigisignHelper;
 use App\Models\RequestLog;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -11,13 +12,17 @@ use Illuminate\Support\Facades\Cache;
 class DigisignService
 {
 
-    protected $client;
-    protected $baseUri;
-    protected $apiKey;
-//    protected $accessToken;
-//    protected $tokenExpiresAt;
-//    protected $organisationId;
-    protected $organisationName;
+    public $client;
+    public $baseUri;
+    public $apiKey;
+    public $accessToken;
+    public $tokenExpiresAt;
+    public $organisationId;
+    public $organisationName;
+    public $workspaceId;
+    public $templateId;
+
+    public $session;
 
     public function __construct()
     {
@@ -25,24 +30,40 @@ class DigisignService
         $this->baseUri = config('services.digisign.baseUri');
         $this->apiKey = config('services.digisign.apiKey');
 
-//        $this->accessToken = $this->generateSession()['data']['accessToken'];
-//        echo $this->tokenExpiresAt;
-//        echo $this->organisationId;
-//        $this->organisationName = $this->generateSession()['data']['organisationName'];
+        $this->session = $this->generateSession();
+
+        $this->accessToken = $this->session['data']['accessToken'];
+        $this->tokenExpiresAt = $this->session['data']['tokenExpiresAt'];
+        $this->organisationId = $this->session['data']['organisationId'];
+        $this->organisationName = $this->session['data']['organisationName'];
+
+        $this->workspaceId = $this->getWorkspaceId()['workspaceId'];
+        $this->templateId = $this->getTemplate()['templateId'];
+        $this->recipientId = $this->getTemplate()['recipientId'];
+
     }
 
 
-//    public function getAccessToken()
+//    public function getSession()
 //    {
 //        if (!$this->accessToken || $this->isTokenExpired()) {
-//            $this->requestAccessToken();
+//            return $this->generateSession();
 //        }
-//        return $this->accessToken;
+//        return $this->session;
 //    }
 
-//    private function isTokenExpired()
+    private function isTokenExpired()
+    {
+        return Carbon::parse($this->tokenExpiresAt) < Carbon::now();
+    }
+
+//    public function getSession()
 //    {
-//        return Carbon::parse($this->tokenExpiresAt) < Carbon::now();
+//
+//        if (!$this->accessToken || Carbon::createFromTimestampMs($this->tokenExpiresAt) <= now()) {
+//            return $this->session = $this->generateSession();
+//        }
+//        return $this->session;
 //    }
 
     /**
@@ -51,6 +72,7 @@ class DigisignService
      */
     public function generateSession()
     {
+
         try {
             $response = $this->client->post("$this->baseUri/v1/keys/session", [
                 'headers' => [
@@ -68,7 +90,7 @@ class DigisignService
                     'tokenExpiresAt' => $data['data']['expires_in'],
                     'organisationId' => $data['data']['organisation_id'],
                     'organisationName' => $data['data']['organisation_name'],
-                ]
+                ],
             ];
 
 
@@ -126,23 +148,104 @@ class DigisignService
         }
     }
 
-    public function transformTemplate($templateId,$data,$loanId = null)
+    public function getWorkspaceId()
     {
-        $session = $this->generateSession();
-        if ($session['status'] != 'success'){
-            return $session;
-        }
-        $accessToken = $session['data']['accessToken'];
-        $organisationId = $session['data']['organisationId'];
 
         $headers = [
-            'X-O10N-Identifier' => $organisationId,
-            'X-WS-Identifier' => '',
-            'Content-Type' => 'application/json',
-            'Authorization' => "Bearer $accessToken",
             'X-API-KEY' => $this->apiKey,
+            'Content-Type' => 'application/json',
+            'Authorization' => "Bearer $this->accessToken",
+            'X-O10N-Identifier' => $this->organisationId,
         ];
-        $endpoint = "/v1/templates/{$templateId}/transform";
+        $data = [];
+        $endpoint = "/v1/workspaces";
+        $uri = $this->baseUri . $endpoint;
+        $requestLog = [
+            'uri' => $uri,
+            'endpoint' => $endpoint,
+//            'time' => $time,
+            'source'=>'',
+            'narration' => 'request for a workspace id',
+        ];
+
+        $response = $this->makeRequest('GET',$uri,$headers,[],[],$data,$requestLog);
+
+        return [
+                'workspaceId' => $response['data'][0]['public_id'],
+            ];
+
+    }
+
+    public function getTemplate()
+    {
+
+        $headers = [
+            'X-API-KEY' => $this->apiKey,
+            'Content-Type' => 'application/json',
+            'Authorization' => "Bearer $this->accessToken",
+            'X-O10N-Identifier' => $this->organisationId,
+            'X-WS-Identifier' => $this->workspaceId,
+        ];
+
+        $data = [];
+
+        $endpoint = "/v1/templates";
+        $uri = $this->baseUri.$endpoint;
+        $requestLog = [
+            'uri' => $uri,
+            'endpoint' => $endpoint,
+//            'time' => $time,
+            'source'=>'',
+            'narration' => 'get the template id',
+        ];
+
+        $response = $this->makeRequest('GET',$uri,$headers,[],[],$data,$requestLog);
+        return [
+          'recipientId' => $response['data'][0]["recipient_aliases"][0]['alias_id'],
+            'templateId' => $response['data'][0]['public_id'],
+        ];
+    }
+
+    public function transformTemplate()
+    {
+
+        if (!$this->accessToken || $this->isTokenExpired()) {
+            $this->generateSession();
+        }
+
+
+        $headers = [
+            'X-API-KEY' => $this->apiKey,
+            'Content-Type' => 'application/json',
+            'Authorization' => "Bearer $this->accessToken",
+            'X-O10N-Identifier' => $this->organisationId,
+            'X-WS-Identifier' => $this->workspaceId,
+        ];
+
+//        $data = DigisignHelper::templateDetails();
+
+       $data = [
+            "recipients" => [
+        [
+            "id" => "$this->recipientId",
+            "name" => "Levine Cmion",
+            "email" => "phronesis4xt@gmail.com",
+            "fillable" => [
+            "role" => "Chief Executive Officer",
+            ],
+            "private_message" => "Jide, please check this document ASAP, for your container. This is just a test document tho. Good testing!!!",
+        ],
+    ],
+    "message" => [
+            "subject" => "Avocado Replublic Export v1.7.7",
+        "body" => "Please review and sign this document as soon as you can. Thanks",
+    ],
+];
+
+//        dd($data);
+
+
+        $endpoint = "/v1/templates/".$this->templateId."/transform";
         $uri = $this->baseUri.$endpoint;
         $requestLog = [
             'uri' => $uri,
@@ -152,7 +255,8 @@ class DigisignService
             'narration' => 'send the template as request.',
         ];
 
-        $this->makeRequest('PUT',$uri,$headers,[],[],$data,$requestLog);
+
+        return $this->makeRequest('PUT',$uri,$headers,[],[],$data,$requestLog);
 
     }
 

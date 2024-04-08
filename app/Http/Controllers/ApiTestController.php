@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\ExternalServices\DigisignService;
 use App\ExternalServices\RemitaService;
 use Illuminate\Http\Request;
 
 class ApiTestController
 {
     private RemitaService $remitaService;
+    private DigisignService $digisignService;
     private String $authorizationCode;
     /**
      * @param RemitaService $remitaService
@@ -15,6 +17,7 @@ class ApiTestController
     public function __construct()
     {
         $this->remitaService = new RemitaService();
+        $this->digisignService = new DigisignService();
         $this->authorizationCode = uuid_create();
     }
 
@@ -55,7 +58,7 @@ class ApiTestController
             "bankCode" => "023"
         ];
 
-        return $this->remitaService->loanDisburstmentNotification($data);
+        return $this->remitaService->loanDisbursementNotification($data);
     }
 
     public function mandateHistoryController()
@@ -78,6 +81,11 @@ class ApiTestController
         ];
 
         return $this->remitaService->stopLoanCollection($data);
+    }
+
+    public function transformTemplate()
+    {
+        return $this->digisignService->transformTemplate();
     }
 
 }
