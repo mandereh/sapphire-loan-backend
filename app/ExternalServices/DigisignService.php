@@ -3,6 +3,7 @@
 namespace App\ExternalServices;
 
 use App\ExternalServices\Helpers\DigisignHelper;
+use App\Models\Loan;
 use App\Models\RequestLog;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -23,6 +24,7 @@ class DigisignService
     public $templateId;
 
     public $session;
+    public $recipientId;
 
     public function __construct()
     {
@@ -206,7 +208,7 @@ class DigisignService
         ];
     }
 
-    public function transformTemplate()
+    public function transformTemplate(Loan $loan)
     {
 
         if (!$this->accessToken || $this->isTokenExpired()) {
@@ -224,32 +226,40 @@ class DigisignService
 
 //        $data = DigisignHelper::templateDetails();
 
+    $monthlyRepaymentAmount = number_format($loan->total_repayment_amount/$loan->tenor);
+    $fillable = [
+        "product_name" => $loan->loanType->name,
+        "loan_account_number" => $loan->salary_account_number,
+        "name_of_customer" => $loan->user->first_name.' '.$loan->user->last_name,
+        "address_of_customer" => $loan->address,
+        "current_date" => today()->format('jS M, Y'),
+        "customer_firstname" => $loan->user->first_name,
+        "loan_type" => $loan->loanType->name,
+        "disbursement_amount" => number_format($loan->approved_amount),
+        "disbursement_date" => $loan->created_at->format('jS M, Y'),
+        "loan_tenor" => $loan->tenor,
+        "monthly_repayment" => $monthlyRepaymentAmount,
+        "interest_rate" => $loan->rate,
+    ];
+    
+    $totalRounds = $loan->tenor;
+
+    $index = 1;
+    while($totalRounds > 0){
+        $dueDate = $loan->created_at->addMonthNoOverflow($index);
+        $fillable["due_amount".$index] = $monthlyRepaymentAmount;
+        $fillable["repayment_date".$index] = $dueDate->format('jS M, Y');
+        $index++;
+        $totalRounds--;
+    }
+
        $data = [
             "recipients" => [
         [
             "id" => "$this->recipientId",
-            "name" => "Levine Cmion",
-            "email" => "phronesis4xt@gmail.com",
-            "fillable" => [
-            "product_name" => "",
-            "loan_account_number" => "",
-            "name_of_customer" => "",
-            "address_of_customer" => "",
-            "current_date" => "",
-            "customer_firstname" => "",
-            "loan_type" => "",
-            "disbursement_amount" => "",
-            "disbursement_date" => "",
-            "loan_tenor" => "",
-            "monthly_repayment" => "",
-            "interest_rate" => "",
-            "due_amount1" => "",
-            "repayment_date1" => "",
-            "due_amount2" => "",
-            "repayment_date2" => "",
-            "due_amount3" => "",
-            "repayment_date3" => "",
-            ],
+            "name" => $loan->user->first_name.' '.$loan->user->last_name,
+            "email" => $loan->user->email,
+            "fillable" => $fillable,
             "private_message" => "Jide, please check this document ASAP, for your container. This is just a test document tho. Good testing!!!",
         ],
     ],

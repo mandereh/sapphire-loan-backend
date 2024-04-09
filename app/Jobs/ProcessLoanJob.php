@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Constants\Status;
+use App\ExternalServices\DigisignService;
 use App\ExternalServices\RemitaService;
 use App\Models\Loan;
 use Illuminate\Bus\Queueable;
@@ -44,9 +45,23 @@ class ProcessLoanJob implements ShouldQueue
                 //Do Assessment
                 $offer = $loan->calculateOffer($remitaResponse['data']);
 
-                dd($offer);
-                //Create offer letter PDF
+                $loan->rate = $loan->loanType->rate;
 
+                $loan->total_interest = $offer * $loan->rate * $loan->tenor/100;
+
+                $monthlyRepaymentAmount = $offer + $loan->total_interest;
+                
+                $loan->total_repayment_amount = $monthlyRepaymentAmount * $loan->tenor;
+
+                $loan->approved_amount = $monthlyRepaymentAmount * $loan->tenor;
+
+                dd($loan);
+                
+                $loan->save();
+
+                $digiSign = new DigisignService();
+
+                $digiSign->transformTemplate($loan);
 
                 //Email Offer with link to digisign else Email no offer available
             }else{
