@@ -167,7 +167,7 @@ class RemitaService
 
         $data = [];
 
-        if(app()->environment('local') || app()->environment('staging')){
+        if(app()->environment('local', 'staging')){
             return $this->dummyData();
         }
 
