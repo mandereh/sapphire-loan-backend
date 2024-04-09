@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
 
 class RemitaService
@@ -167,6 +168,7 @@ class RemitaService
 
         $data = [];
 
+        Log::info(app()->environment());
         if(app()->environment('local', 'staging')){
             return $this->dummyData();
         }
