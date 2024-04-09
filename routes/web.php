@@ -17,3 +17,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('leads/template/download',[\App\Http\Controllers\LeadController::class,'downloadLeadsTemplate']);
+Route::post('digisign/webhook',[\App\Http\Controllers\digisignWebhookController::class,'webhook']);
