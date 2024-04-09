@@ -81,7 +81,7 @@ class LoanController extends Controller
         $loan->save();
 
         ProcessLoanJob::dispatch($loan)
-                            ->onQueue('repayments');
+                            ->onQueue('processLoans');
 
         $resp = [
             'status_code' => '00',
