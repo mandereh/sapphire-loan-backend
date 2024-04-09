@@ -27,7 +27,7 @@ Route::post('/remita/mandateHistory',[\App\Http\Controllers\ApiTestController::c
 Route::post('/remita/stopLoanCollection',[\App\Http\Controllers\ApiTestController::class,'stopLoanCollectionController']);
 Route::put('/digisign/transformTemplate',[\App\Http\Controllers\ApiTestController::class,'transformTemplate']);
 
-Route::post('/user/login', [UserController::class, 'token'])->name('login');
+Route::post('/user/login', [UserController::class, 'token'])->name('api.login');
 
 Route::get('/user', [UserController::class, 'userDetails'])->middleware('auth:sanctum');
 
