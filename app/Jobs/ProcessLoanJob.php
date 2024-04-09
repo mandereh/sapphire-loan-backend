@@ -43,25 +43,28 @@ class ProcessLoanJob implements ShouldQueue
         if($remitaResponse && $remitaResponse['responseCode'] == "00"){
             if($remitaResponse['hasData']){
                 //Do Assessment
-                $offer = $loan->calculateOffer($remitaResponse['data']);
+                $offer = $loan->calculateOffer($remitaResponse);
 
-                $loan->rate = $loan->loanType->rate;
+                if($offer >= $loan->amount){
+                    $loan->rate = $loan->loanType->rate;
 
-                $loan->total_interest = $offer * $loan->rate * $loan->tenor/100;
+                    $loan->total_interest = $loan->amount * $loan->rate * $loan->tenor/100;
+                        
+                    $loan->total_repayment_amount = $loan->amount + $loan->total_interest;
+    
+                    $loan->approved_amount = $loan->amount;
+                        
+                    $loan->save();
+    
+                    $digiSign = new DigisignService();
+    
+                    $digiSign->transformTemplate($loan);
+    
+                }else{
+                    $loan->status = Status::REJECTED;
 
-                $monthlyRepaymentAmount = $offer + $loan->total_interest;
-                
-                $loan->total_repayment_amount = $monthlyRepaymentAmount * $loan->tenor;
-
-                $loan->approved_amount = $monthlyRepaymentAmount * $loan->tenor;
-
-                dd($loan);
-                
-                $loan->save();
-
-                $digiSign = new DigisignService();
-
-                $digiSign->transformTemplate($loan);
+                    $loan->save();
+                }
 
                 //Email Offer with link to digisign else Email no offer available
             }else{

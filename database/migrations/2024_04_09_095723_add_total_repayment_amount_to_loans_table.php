@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('loans', function (Blueprint $table) {
             $table->decimal('total_repayment_amount',11,2)->nullable();
             $table->decimal('total_interest', 11,2)->nullable();
-            $table->decimal('rate', 2,2)->nullable();
+            $table->decimal('rate', 5,2)->nullable();
         });
     }
 

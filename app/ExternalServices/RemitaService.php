@@ -27,23 +27,23 @@ class RemitaService
 
 
 
-    public function __construct()
-    {
-        $this->client = new Client();
-        $this->baseUri = config('services.remita.baseUri');
-        $this->username = config('services.remita.username');
-        $this->password = config('services.remita.password');
-        $this->tokenExpiresAt = $this->requestAccessToken();
-        $this->accessToken = $this->getAccessToken();
+    // public function __construct()
+    // {
+    //     $this->client = new Client();
+    //     $this->baseUri = config('services.remita.baseUri');
+    //     $this->username = config('services.remita.username');
+    //     $this->password = config('services.remita.password');
+    //     $this->tokenExpiresAt = $this->requestAccessToken();
+    //     $this->accessToken = $this->getAccessToken();
 
 
-        $this->apiKey = 'Q1dHREVNTzEyMzR8Q1dHREVNTw==';
-        $this->apiToken = 'SGlQekNzMEdMbjhlRUZsUzJCWk5saDB6SU14Zk15djR4WmkxaUpDTll6bGIxRCs4UkVvaGhnPT0=';
-        $this->merchantId = '27768931';
-        $this->requestId = uuid_create();
-        $this->apiHash = $this->generateConsumerToken();
-        $this->authorization = $this->constructAuthorization();
-    }
+    //     $this->apiKey = 'Q1dHREVNTzEyMzR8Q1dHREVNTw==';
+    //     $this->apiToken = 'SGlQekNzMEdMbjhlRUZsUzJCWk5saDB6SU14Zk15djR4WmkxaUpDTll6bGIxRCs4UkVvaGhnPT0=';
+    //     $this->merchantId = '27768931';
+    //     $this->requestId = uuid_create();
+    //     $this->apiHash = $this->generateConsumerToken();
+    //     $this->authorization = $this->constructAuthorization();
+    // }
 
     public function getAccessToken()
     {
@@ -145,24 +145,27 @@ class RemitaService
      */
     public function getSalaryHistory(array $requestData)
     {
-        $headers = [
-            'Content-Type' => 'application/json',
-            'API_KEY' => $this->apiKey,
-            'MERCHANT_ID' => $this->merchantId,
-            'REQUEST_ID' => $this->requestId,
-            'AUTHORIZATION' => $this->authorization,
-        ];
-        $data = [
-            'authorisationCode' => $requestData['authorisationCode'],
-            'firstName' => $requestData['firstName'],
-            'lastName' => $requestData['lastName'],
-            'middleName' => $requestData['middleName'],
-            'accountNumber' => $requestData['accountNumber'],
-            'bankCode' => $requestData['bankCode'],
-            'bvn' => $requestData['bvn'],
-            'authorisationChannel' => $requestData['authorisationChannel']
-        ];
+        // $headers = [
+        //     'Content-Type' => 'application/json',
+        //     'API_KEY' => $this->apiKey,
+        //     'MERCHANT_ID' => $this->merchantId,
+        //     'REQUEST_ID' => $this->requestId,
+        //     'AUTHORIZATION' => $this->authorization,
+        // ];
+        // $data = [
+        //     'authorisationCode' => $requestData['authorisationCode'],
+        //     'firstName' => $requestData['firstName'],
+        //     'lastName' => $requestData['lastName'],
+        //     'middleName' => $requestData['middleName'],
+        //     'accountNumber' => $requestData['accountNumber'],
+        //     'bankCode' => $requestData['bankCode'],
+        //     'bvn' => $requestData['bvn'],
+        //     'authorisationChannel' => $requestData['authorisationChannel']
+        // ];
 
+        $headers = [];
+
+        $data = [];
 
         if(app()->environment('local')){
             return $this->dummyData();
@@ -353,10 +356,11 @@ class RemitaService
         ];
 
         $times = $loanLength;
+        $details = [];
         while($times > 0){
             $percentPayed = mt_rand(0.05,0.9);
             $percentPayed = $repaymentAmount * $percentPayed;
-            $responseData['loanHistoryDetails'] = [
+            $details[] = [
                 "loanProvider" => "*******",
                 "loanAmount" => $repaymentAmount * 80/100,
                 "outstandingAmount" => $repaymentAmount - $percentPayed,
@@ -367,6 +371,8 @@ class RemitaService
             ];
             $times--;
         }
+
+        $responseData['loanHistoryDetails'] = $details;
 
         return $responseData;
     }

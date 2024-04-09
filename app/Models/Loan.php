@@ -77,14 +77,14 @@ class Loan extends Model
     public function calculateOffer(Array $remitaResponseData) : float{
         $averageMonthlySalary = 0;
 
-        if(is_array($remitaResponseData['salaryPaymentDetails'])){
+        if(is_array($remitaResponseData['data']['salaryPaymentDetails'])){
             $salaryPayments = [];
 
-            foreach($remitaResponseData['salaryPaymentDetails'] as $key => $payment){
-                $previousMonth = $remitaResponseData['salaryPaymentDetails'][0]['amount'];
+            foreach($remitaResponseData['data']['salaryPaymentDetails'] as $key => $payment){
+                $previousMonth = $remitaResponseData['data']['salaryPaymentDetails'][0]['amount'];
 
                 if($key > 0){
-                    $previousMonth = $remitaResponseData['salaryPaymentDetails'][$key - 0]['amount'];
+                    $previousMonth = $remitaResponseData['data']['salaryPaymentDetails'][$key - 0]['amount'];
                     if(abs($previousMonth - $payment['amount']) > 15000){
 
                     }
@@ -93,7 +93,7 @@ class Loan extends Model
                 }
             }
 
-            $averageMonthlySalary = array_reduce($remitaResponseData['salaryPaymentDetails'], function($total, $item){
+            $averageMonthlySalary = array_reduce($remitaResponseData['data']['salaryPaymentDetails'], function($total, $item){
                 return $total+= $item['amount'];
             });
         }
@@ -104,7 +104,7 @@ class Loan extends Model
 
         if(is_array($remitaResponseData['loanHistoryDetails'])){
             $totalLoanOutstanding = array_reduce($remitaResponseData['loanHistoryDetails'], function($total, $item){
-                return $total+= $item['amount'];
+                return $total+= $item['outstandingAmount'];
             });
         }
 
@@ -120,9 +120,7 @@ class Loan extends Model
 
         $netOfferAmount = $disposableIncome - 10000;
 
-        $loanType = LoanType::find($this->loan_type);
-
-        $offerAmount = $netOfferAmount - ($netOfferAmount * ($loanType->rate/100));
+        $offerAmount = $netOfferAmount - ($netOfferAmount * ($this->loanType->rate/100));
 
         return $offerAmount;
     }

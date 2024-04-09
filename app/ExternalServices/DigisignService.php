@@ -226,7 +226,7 @@ class DigisignService
 
 //        $data = DigisignHelper::templateDetails();
 
-    $monthlyRepaymentAmount = number_format($loan->total_repayment_amount/$loan->tenor);
+    $monthlyRepaymentAmount = 'N'.number_format($loan->total_repayment_amount/$loan->tenor, 2);
     $fillable = [
         "product_name" => $loan->loanType->name,
         "loan_account_number" => $loan->salary_account_number,
@@ -235,14 +235,15 @@ class DigisignService
         "current_date" => today()->format('jS M, Y'),
         "customer_firstname" => $loan->user->first_name,
         "loan_type" => $loan->loanType->name,
-        "disbursement_amount" => number_format($loan->approved_amount),
+        "disbursement_amount" => 'N'.number_format($loan->approved_amount,2),
         "disbursement_date" => $loan->created_at->format('jS M, Y'),
         "loan_tenor" => $loan->tenor,
         "monthly_repayment" => $monthlyRepaymentAmount,
         "interest_rate" => $loan->rate,
     ];
     
-    $totalRounds = $loan->tenor;
+    // $totalRounds = $loan->tenor;
+    $totalRounds = 3;
 
     $index = 1;
     while($totalRounds > 0){
@@ -260,12 +261,12 @@ class DigisignService
             "name" => $loan->user->first_name.' '.$loan->user->last_name,
             "email" => $loan->user->email,
             "fillable" => $fillable,
-            "private_message" => "Jide, please check this document ASAP, for your container. This is just a test document tho. Good testing!!!",
+            // "private_message" => "Jide, please check this document ASAP, for your container. This is just a test document tho. Good testing!!!",
         ],
     ],
     "message" => [
-            "subject" => "Avocado Replublic Export v1.7.7",
-        "body" => "Please review and sign this document as soon as you can. Thanks",
+            "subject" => "{$loan->user->first_name}, We have an Offer for you",
+        "body" => "Please review this offer and sign for your loan to be disbursed.\nThanks\n\nSapphire Team",
     ],
 ];
 
