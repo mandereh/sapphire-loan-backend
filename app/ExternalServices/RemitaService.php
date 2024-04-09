@@ -27,23 +27,23 @@ class RemitaService
 
 
 
-    // public function __construct()
-    // {
-    //     $this->client = new Client();
-    //     $this->baseUri = config('services.remita.baseUri');
-    //     $this->username = config('services.remita.username');
-    //     $this->password = config('services.remita.password');
-    //     $this->tokenExpiresAt = $this->requestAccessToken();
-    //     $this->accessToken = $this->getAccessToken();
+    public function __construct()
+    {
+        $this->client = new Client();
+        $this->baseUri = config('services.remita.baseUri');
+        $this->username = config('services.remita.username');
+        $this->password = config('services.remita.password');
+        $this->tokenExpiresAt = $this->requestAccessToken();
+        $this->accessToken = $this->getAccessToken();
 
 
-    //     $this->apiKey = 'Q1dHREVNTzEyMzR8Q1dHREVNTw==';
-    //     $this->apiToken = 'SGlQekNzMEdMbjhlRUZsUzJCWk5saDB6SU14Zk15djR4WmkxaUpDTll6bGIxRCs4UkVvaGhnPT0=';
-    //     $this->merchantId = '27768931';
-    //     $this->requestId = uuid_create();
-    //     $this->apiHash = $this->generateConsumerToken();
-    //     $this->authorization = $this->constructAuthorization();
-    // }
+        $this->apiKey = 'Q1dHREVNTzEyMzR8Q1dHREVNTw==';
+        $this->apiToken = 'SGlQekNzMEdMbjhlRUZsUzJCWk5saDB6SU14Zk15djR4WmkxaUpDTll6bGIxRCs4UkVvaGhnPT0=';
+        $this->merchantId = '27768931';
+        $this->requestId = uuid_create();
+        $this->apiHash = $this->generateConsumerToken();
+        $this->authorization = $this->constructAuthorization();
+    }
 
     public function getAccessToken()
     {
