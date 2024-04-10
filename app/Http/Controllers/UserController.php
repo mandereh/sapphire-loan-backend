@@ -60,11 +60,15 @@ class UserController extends Controller
     }
 
     public function getUserByIppis(Request $request){
-        $request->validate([
-            'ippis' => 'required|numeric'
-        ]);
+        // $request->validate([
+        //     'ippis' => 'nullable|numeric',
+        //     'ippis' => 'required|numeric'
+        // ]);
 
-        $user = User::where('ippis_number', $request->ippis)->first();
+        $user = User::where('ippis_number', $request->ippis)
+                        ->orWhere('phone_number', $request->phone_number)
+                        ->orWhere('email', $request->email)
+                        ->first();
 
         if($user){
             $statusCode = 200;

@@ -9,8 +9,7 @@ class digisignWebhookController extends Controller
 {
     public function webhook(Request $request)
     {
-        Log::debug($request->all());
-
+        Log::debug("Digisign Webhook", $request->all());
         return response()->json(['success' => true],200);
     }
 }
