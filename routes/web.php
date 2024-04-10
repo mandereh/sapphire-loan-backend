@@ -22,4 +22,4 @@ Route::get('/', function () {
 });
 
 Route::get('leads/template/download',[\App\Http\Controllers\LeadController::class,'downloadLeadsTemplate']);
-Route::get('digisign/webhook',[\App\Http\Controllers\digisignWebhookController::class,'webhook']);
+Route::any('digisign/webhook',[\App\Http\Controllers\digisignWebhookController::class,'webhook']);
