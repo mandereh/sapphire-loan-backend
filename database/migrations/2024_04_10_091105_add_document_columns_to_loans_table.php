@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('loan', function (Blueprint $table) {
+        Schema::table('loans', function (Blueprint $table) {
             $table->string('document_id')->nullable();
             $table->string('document_link')->nullable();
         });
@@ -22,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('loan', function (Blueprint $table) {
-            //
+        Schema::table('loans', function (Blueprint $table) {
+            $table->dropColumn(['document_id', 'document_link']);
         });
     }
 };
