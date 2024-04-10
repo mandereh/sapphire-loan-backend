@@ -155,7 +155,9 @@ return [
     |
     */
 
-    'providers' => ServiceProvider::defaultProviders()->merge([
+    'providers' => ServiceProvider::defaultProviders()->merge((!app()->isLocal() ? [
+        App\Providers\HorizonServiceProvider::class,
+    ]  : []) +[
         /*
          * Package Service Providers...
          */
@@ -170,7 +172,6 @@ return [
         App\Providers\HorizonServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\FortifyServiceProvider::class,
-        App\Providers\HorizonServiceProvider::class,
     ])->toArray(),
 
     /*
