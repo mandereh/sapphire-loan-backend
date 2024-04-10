@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class ProcessLoanJob implements ShouldQueue
 {
@@ -58,8 +59,13 @@ class ProcessLoanJob implements ShouldQueue
     
                     $digiSign = new DigisignService();
     
-                    $digiSign->transformTemplate($loan);
-    
+                    $digisignResponse = $digiSign->transformTemplate($loan);
+
+                    if(isset($digisignResponse['data']['status']) && ($digisignResponse['data']['status'] == 'success' || $digisignResponse['data']['status'] == 'pending')){
+                        $loan->document_id = $digisignResponse['data']['public_id'];
+                        $loan->save();
+                    }
+
                 }else{
                     $loan->status = Status::REJECTED;
 

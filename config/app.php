@@ -155,7 +155,9 @@ return [
     |
     */
 
-    'providers' => ServiceProvider::defaultProviders()->merge([
+    'providers' => ServiceProvider::defaultProviders()->merge((env('APP_ENV') != 'local' ? [
+        App\Providers\HorizonServiceProvider::class,
+    ]  : []) +[
         /*
          * Package Service Providers...
          */
