@@ -39,6 +39,24 @@ class ApiTestController
      return $this->remitaService->getSalaryHistory($data);
 
     }
+    public function getRemitaSalaryHistoryByPhonenumber()
+    {
+
+           $data = [
+                "authorisationCode"=> $this->authorizationCode,
+                "firstName"=> "Daerego",
+                "lastName"=> "Braide",
+                "middleName"=> "R",
+                "accountNumber"=> "0235012284",
+                "phoneNumber"=> "07068541504",
+                "bankCode"=> "023",
+                "bvn"=> "22222222223",
+                "authorisationChannel"=> "USSD"
+           ];
+
+     return $this->remitaService->getSalaryHistory($data);
+
+    }
 
     public function loanDisburstmentNotificationController()
     {

@@ -187,6 +187,66 @@ class RemitaService
         return $this->makeRequest('POST', $uri,$headers,[],[], $data,$requestLog);
     }
 
+/**
+     * Get salary history for the loan applicant.
+     *
+     * @param array $requestData An array containing the following keys:
+     *   - 'authorisationCode' (string): The authorization code.
+     *   - 'firstname' (string): The first name of the loan applicant.
+     *   - 'lastname' (string): The last name of the loan applicant.
+     *   - 'middlename' (string): The middle name of the loan applicant.
+     *   - 'accountNumber' (string): The account number of the loan applicant.
+     *   - 'bankCode' (string): The bank code of the loan applicant.
+     *   - 'bvn' (string): The Bank Verification Number (BVN) of the loan applicant.
+     *   - 'authorisationChannel' (string): The authorization channel used.
+     *
+     * @return mixed
+     *
+     * @throws GuzzleException
+     */
+    public function getSalaryHistoryByPhonenumber(array $requestData)
+    {
+         $headers = [
+             'Content-Type' => 'application/json',
+             'API_KEY' => $this->apiKey,
+             'MERCHANT_ID' => $this->merchantId,
+             'REQUEST_ID' => $this->requestId,
+             'AUTHORIZATION' => $this->authorization,
+         ];
+         $data = [
+             'authorisationCode' => $requestData['authorisationCode'],
+             'firstName' => $requestData['firstName'],
+             'lastName' => $requestData['lastName'],
+             'middleName' => $requestData['middleName'],
+             'accountNumber' => $requestData['accountNumber'],
+             'bankCode' => $requestData['bankCode'],
+             'bvn' => $requestData['bvn'],
+             'authorisationChannel' => $requestData['authorisationChannel']
+         ];
+
+//        $headers = [];
+//
+//        $data = [];
+//
+//        if(app()->environment('local', 'staging')){
+//            return $this->dummyData();
+//        }
+
+        $endpoint = "/loansvc/data/api/v2/payday/salary/history/ph";
+        $uri = $this->baseUri . $endpoint;
+        $time = time();
+        $requestLog = [
+            'uri' => $uri,
+            'endpoint' => $endpoint,
+            'time' => $time,
+            'source'=>'',
+            'narration' => "get the salary history of the loan applicant by their phonenumber",
+        ];
+
+
+        return $this->makeRequest('POST', $uri,$headers,[],[], $data,$requestLog);
+    }
+
 
     /**
      * Get loan disburstment notification
