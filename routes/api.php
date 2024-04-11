@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RepaymentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -57,11 +58,20 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
     Route::put('/loanTypes/{loanType}/update', [LoanController::class, 'updateLoanType'])->name('loanTypes.update');
 
     Route::get('/loans', [LoanController::class, 'listLoans'])->name('loans.list');
+
+    Route::get('/products', [ProductController::class, 'index'])->name('products');
+
+    Route::post('/products/new', [ProductController::class, 'store'])->name('products.store');
+
+    Route::put('/products/{product}/update', [ProductController::class, 'update'])->name('products.update');
+
+    Route::get('/products/{product}/deactivate', [ProductController::class, 'deactivate'])->name('products.deactivate');
 });
 
 Route::get('/states', [LoanController::class, 'listStates'])->name('states.list');
 Route::get('/loanTypes', [LoanController::class, 'listLoanTypes'])->name('loanTypes.list');
-Route::get('/organizations', [LoanController::class, 'listOrganizations'])->name('organizations.list');
+// Route::get('/organizations', [LoanController::class, 'listOrganizations'])->name('organizations.list');
+Route::get('/products/list', [ProductController::class, 'availableProducts'])->name('products.list');
 Route::get('/banks', [LoanController::class, 'listBanks'])->name('banks.list');
 Route::post('/banks/account/validate', [LoanController::class, 'validateBankAccount'])->name('banks.account.validate');
 

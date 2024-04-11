@@ -23,11 +23,12 @@ class ApplyRequest extends FormRequest
     {
         return [
             'loan_type' => 'required|numeric|exists:loan_types,id',
-            'organization' => 'required|numeric:exists:organizations:id',
+            'product_id' => 'required_if:loan_type,2|numeric|exists:products,id',
+            'organization' => 'required',
             'amount' => 'required|numeric',
             'address' => 'required|string|max:255',
             'city' => 'required|string',
-            'zipcode' => 'required|string',
+            'zipcode' => 'nullable',
             'account_number' => 'required|digits:10',
             'bank_code' => 'required|numeric',
             'state' => 'required|numeric|exists:states,id',

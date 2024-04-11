@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('loans', function (Blueprint $table) {
-            $table->string('document_id')->nullable();
-            $table->text('document_link')->nullable();
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->decimal('price');
+            $table->boolean('active')->default(false);
+            $table->timestamps();
         });
     }
 
@@ -22,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('loans', function (Blueprint $table) {
-            $table->dropColumn(['document_id', 'document_link']);
-        });
+        Schema::dropIfExists('products');
     }
 };

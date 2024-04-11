@@ -22,4 +22,7 @@ class  Status{
     const APPROVED = "approved";
     const DISBURSED = "disbursed";
     const REVIEW = "in review";
+    const PENDING_CONFIRMATION = "pending_customer_confirmation";
+    const PENDING_APPROVAL = "pending_approval";
+    const PENDING_DISBURSEMENT = "pending_disbursement";
 }

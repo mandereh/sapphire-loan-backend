@@ -93,19 +93,17 @@ class RemitaService
 //        if (Cache::has($cacheKey)) {
 //            return Cache::get($cacheKey);
 //        }
+        $request_log = new RequestLog();
+
+        $request_log->request_type = $method;
+        $request_log->narration = $requestLog['narration'];
+        $request_log->source = $requestLog['source'];
+        $request_log->end_point = $uri;
+        //            $request_log->tran_id = $requestLog['time'];
+        $request_log->request_payload = json_encode($data);
 
         try {
-            $request_log = new RequestLog();
-
-            $request_log->request_type = $method;
-            $request_log->narration = $requestLog['narration'];
-            $request_log->source = $requestLog['source'];
-            $request_log->end_point = $requestLog['endpoint'];
-//            $request_log->tran_id = $requestLog['time'];
-            $request_log->request_payload = json_encode($data);
-
-
-
+           
             $response = $this->client->request($method, $uri, [
                 'headers' => $headers,
                 'query' => $queryParam,
@@ -123,6 +121,8 @@ class RemitaService
             return $responseData;
         } catch (GuzzleException $e) {
             // Handle exception
+            $request_log->response_payload = $e->getMessage();
+            $request_log->save();
             throw $e;
         }
     }
@@ -221,15 +221,15 @@ class RemitaService
         ];
         $data = [
             "customerId" => $requestData["customerId"],
-            "authorisationCode" => $requestData["authorisationCode"],
-            "authorisationChannel" => $requestData["authorisationChannel"],
+            "authorisationCode" => isset($requestData["authorisationCode"]) ? $requestData["authorisationCode"] : uuid_create(),
+            "authorisationChannel" => isset($requestData["authorisationChannel"]) ? $requestData["authorisationChannel"] : 'USSD',
             "phoneNumber" => $requestData["phoneNumber"],
             "accountNumber" => $requestData["accountNumber"],
-            "currency" => $requestData["currency"],
+            "currency" => $requestData["currency"] ?? 'NGN',
             "loanAmount" => $requestData["loanAmount"],
             "collectionAmount" => $requestData["collectionAmount"],
             "dateOfDisbursement" => $requestData["disbursementDate"],
-            "dateOfCollection" => $requestData["disbursementDate"],
+            "dateOfCollection" => $requestData["collectionDate"],
             "totalCollectionAmount" => $requestData["totalCollectionAmount"],
             "numberOfRepayments" => $requestData["numberOfRepayments"],
             "bankCode" => $requestData["bankCode"]

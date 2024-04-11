@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('loans', function (Blueprint $table) {
-            $table->string('document_id')->nullable();
-            $table->text('document_link')->nullable();
+            $table->string('remita_customer_id')->nullable();
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('loans', function (Blueprint $table) {
-            $table->dropColumn(['document_id', 'document_link']);
+            $table->dropColumn('remita_customer_id');
         });
     }
 };

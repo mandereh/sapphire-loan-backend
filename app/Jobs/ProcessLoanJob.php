@@ -46,6 +46,8 @@ class ProcessLoanJob implements ShouldQueue
                 //Do Assessment
                 $offer = $loan->calculateOffer($remitaResponse);
 
+                $loan->remita_customer_id = $remitaResponse['data']['customerId'];
+
                 if($offer >= $loan->amount){
                     $loan->rate = $loan->loanType->rate;
 
@@ -63,8 +65,8 @@ class ProcessLoanJob implements ShouldQueue
 
                     if(isset($digisignResponse['data']['status']) && ($digisignResponse['data']['status'] == 'success' || $digisignResponse['data']['status'] == 'pending')){
                         $loan->document_id = $digisignResponse['data']['public_id'];
-                        $loan->save();
                     }
+                    $loan->save();
 
                 }else{
                     $loan->status = Status::REJECTED;

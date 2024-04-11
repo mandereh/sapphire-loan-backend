@@ -11,6 +11,7 @@ use App\Jobs\ProcessLoanJob;
 use App\Models\Loan;
 use App\Models\LoanType;
 use App\Models\Organization;
+use App\Models\Product;
 use App\Models\State;
 use Illuminate\Http\Request;
 
@@ -52,9 +53,7 @@ class LoanController extends Controller
 
         $loan->loan_type_id = $request->loan_type;
 
-        $loan->organization_id = $request->loan_type;
-
-        $loan->organization_id = $request->loan_type;
+        $loan->organization_name = $request->organization;
 
         $loan->address = $request->address;
 
@@ -68,11 +67,17 @@ class LoanController extends Controller
 
         $loan->state_id = $request->state;
 
-        $loan->state_id = $request->state;
+        $loan->product_id = $request->product_id;
 
         $loan->reffered_by_id = $request->reffered_by;
 
-        $loan->amount = $request->amount;
+        $product = Product::findOrFail($loan->product_id);
+
+        if($product){
+            $loan->amount = $product->price;
+        }else{
+            $loan->amount = $request->amount;
+        }
 
         $loan->reference = $loan->getUniqueReference();
 

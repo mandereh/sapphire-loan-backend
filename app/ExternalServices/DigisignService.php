@@ -128,7 +128,7 @@ class DigisignService
             $request_log->request_type = $method;
             $request_log->narration = $requestLog['narration'];
             $request_log->source = $requestLog['source'];
-            $request_log->end_point = $requestLog['endpoint'];
+            $request_log->end_point = $uri;
 //            $request_log->tran_id = $requestLog['time'];
             $request_log->request_payload = json_encode($data);
 

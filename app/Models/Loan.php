@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
 use App\Models\LoanType;
+use App\Models\Product;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Loan extends Model
 {
@@ -41,6 +43,16 @@ class Loan extends Model
     public function relationshipManager(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'relationship_manager');
+    }
+
+    /**
+     * Get the product associated with the Loan
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function product(): HasOne
+    {
+        return $this->hasOne(Product::class);
     }
 
     /**
