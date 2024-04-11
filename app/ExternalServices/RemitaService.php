@@ -217,7 +217,7 @@ class RemitaService
             'MERCHANT_ID' => $this->merchantId,
             'REQUEST_ID' => $this->requestId,
             'AUTHORIZATION' => $this->authorization,
-            'Authorization' => $this->accessToken,
+//            'Authorization' => $this->accessToken,
         ];
         $data = [
             "customerId" => $requestData["customerId"],
@@ -234,6 +234,7 @@ class RemitaService
             "numberOfRepayments" => $requestData["numberOfRepayments"],
             "bankCode" => $requestData["bankCode"]
         ];
+
 
         $endpoint = "/loansvc/data/api/v2/payday/post/loan";
         $uri = $this->baseUri . $endpoint;

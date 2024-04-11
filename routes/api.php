@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/user/register', [UserController::class, 'register']);
 
 Route::post('/remita/getSalaryHistory',[\App\Http\Controllers\ApiTestController::class,'getRemitaSalaryHistory']);
+Route::post('/remita/getSalaryHistoryByPhonenumber',[\App\Http\Controllers\ApiTestController::class,'getRemitaSalaryHistoryByPhonenumber']);
 Route::post('/remita/loanDisbursementNotification',[\App\Http\Controllers\ApiTestController::class,'loanDisbursementNotificationController']);
 Route::post('/remita/mandateHistory',[\App\Http\Controllers\ApiTestController::class,'mandateHistoryController']);
 Route::post('/remita/stopLoanCollection',[\App\Http\Controllers\ApiTestController::class,'stopLoanCollectionController']);
