@@ -97,17 +97,19 @@ class Loan extends Model
 
                 if($key > 0){
                     $previousMonth = $remitaResponseData['data']['salaryPaymentDetails'][$key - 0]['amount'];
-                    if(abs($previousMonth - $payment['amount']) > 15000){
-
+                    if(abs($previousMonth - $payment['amount']) < 15000){
+                        $salaryPayments[] = $payment['amount'];
                     }
                 }else{
                     $salaryPayments[] = $previousMonth;
                 }
             }
 
-            $averageMonthlySalary = array_reduce($remitaResponseData['data']['salaryPaymentDetails'], function($total, $item){
-                return $total+= $item['amount'];
-            });
+            // dd($salaryPayments);
+
+            // dd($averageMonthlySalary);
+
+            $averageMonthlySalary = array_sum($salaryPayments) / count($salaryPayments);
         }
 
         $totalAverageSalary = $averageMonthlySalary * $this->tenor;
@@ -128,7 +130,7 @@ class Loan extends Model
             });
         }
 
-        $disposableIncome = $averageMonthlySalary - $totalRepaymentAmount;
+        $disposableIncome = $totalAverageSalary - $totalRepaymentAmount;
 
         $netOfferAmount = $disposableIncome - 10000;
 

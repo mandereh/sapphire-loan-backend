@@ -43,6 +43,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected array $guard_name = ['sanctum', 'web'];
+
     /**
      * The attributes that should be cast.
      *

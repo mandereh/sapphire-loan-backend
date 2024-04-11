@@ -17,7 +17,7 @@ class AdminSeeder extends Seeder
      */
     public function run()
     {
-        $adminUser = User::firstOrCreate(['email' => 'courage.bekenawei@spectrummfb.com'],[
+        $adminUser = User::firstOrCreate(['email' => 'cbekenawei@gmail.com'],[
             'first_name' => 'Courage',
             'last_name' => 'Bekenawei',
             'email' => 'cbekenawei@gmail.com',
@@ -27,16 +27,16 @@ class AdminSeeder extends Seeder
             'refferal_code' => 0
         ]);
 
-        // $adminUser->email_verified_at = now();
+        $adminUser->email_verified_at = now();
 
-        // $adminUser->save();
+        $adminUser->save();
 
-        // $adminRole = Role::where('name', 'Super Admin')->where('guard_name', 'sanctum')->first();
+        $adminRole = Role::where('name', 'Super Admin')->where('guard_name', 'sanctum')->first();
 
-        // $allPermissions = Permission::where('guard_name', 'sanctum')->get();
+        $allPermissions = Permission::where('guard_name', 'sanctum')->get();
 
-        // $adminRole->syncPermissions($allPermissions);
+        $adminRole->syncPermissions($allPermissions);
 
-        // $adminUser->syncRoles($adminRole);
+        $adminUser->syncRoles($adminRole);
     }
 }

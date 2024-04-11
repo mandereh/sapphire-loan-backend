@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Constants\Status;
 use App\ExternalServices\GiroService;
+use App\ExternalServices\RemitaService;
+use App\Http\Requests\Admin\UpdateLoanRequest;
 use App\Http\Requests\ApplyRequest;
 use App\Http\Requests\UpdateLoanTypeRequest;
 use App\Http\Requests\ValidateBankAccountRequest;
+use App\Jobs\DisburseLoan;
 use App\Jobs\ProcessLoanJob;
 use App\Models\Loan;
 use App\Models\LoanType;
@@ -73,7 +76,7 @@ class LoanController extends Controller
 
         $product = Product::findOrFail($loan->product_id);
 
-        if($product){
+        if($product && $loan->loan_type_id == 2){
             $loan->amount = $product->price;
         }else{
             $loan->amount = $request->amount;
@@ -84,6 +87,12 @@ class LoanController extends Controller
         $loan->status = Status::PROCESSING;
 
         $loan->save();
+
+        // $remitaService = new  RemitaService();
+
+        // $remitaResponse = $remitaService->getSalaryHistory([]);
+
+        // return $loan->calculateOffer($remitaResponse);
 
         ProcessLoanJob::dispatch($loan)
                             ->onQueue('processLoans');
@@ -203,20 +212,53 @@ class LoanController extends Controller
     }
 
     //Loan Officer updates customer loan uploading -voice recording- and other information
-    public function updateLoan(){
+    public function uploadAuthorization(UpdateLoanRequest $request, Loan $loan){
 
-    }
+        $this->authorize('update', $loan);
 
-    //Initiated by Digisign
-    public function acceptOffer(){
-        // Setup deduction
+        $filePath = $request->file('authorization_file')->store('public/authorization/audio_files');
+        
+        $filePath = explode('/', $filePath);
 
-        //Disburse via Giro
+        array_shift($filePath);
+
+        $loan->authorization_file = implode('/', $filePath);
+
+        $loan->status = Status::PENDING_APPROVAL;
+
+        $loan->save();
+
+        $resp = [
+            'status_code' => '00',
+            'message' => "Authorization successfully uploaded",
+        ];
+
+        $statusCode = 200;
+        
+        return response($resp, $statusCode);
     }
 
     //Initiated by Risk
-    public function manualApproval(){
+    public function manualApproval(Request $request, Loan $loan){
+        $this->authorize('approve', $loan);
 
+        $loan->status = Status::APPROVED;
+
+        $loan->approved_by_id = auth()->id();
+
+        $loan->save();
+
+        DisburseLoan::dispatch($loan)
+                        ->onQueue('processLoans');
+
+        $resp = [
+            'status_code' => '00',
+            'message' => "Loan has been approved and pushed for disbursement",
+        ];
+
+        $statusCode = 200;
+        
+        return response($resp, $statusCode);
     }
 
     //Manual disbursement initiated by finance
@@ -236,18 +278,5 @@ class LoanController extends Controller
 
     public function bvnValidation(){
 
-    }
-
-    public function digisignCallback(Request $request){
-        //verify call back
-
-        //save digisign files
-
-
-        //setup deductions
-
-        //disburse loan
-
-        //s
     }
 }

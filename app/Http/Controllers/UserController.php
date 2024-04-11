@@ -34,10 +34,16 @@ class UserController extends Controller
 
         $lastCode++;
 
+        $email = $request->email;
+
+        if($email && str_contains($email, 'example.com')){
+            $email = null;
+        }
+
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
-            'email' => $request->email,
+            'email' => $email,
             'phone_number' => $request->phone_number,
             'ippis_number' => $request->ippis_number,
             'date_of_birth' => $request->date_of_birth,

@@ -67,6 +67,10 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
     Route::put('/products/{product}/update', [ProductController::class, 'update'])->name('products.update');
 
     Route::get('/products/{product}/deactivate', [ProductController::class, 'deactivate'])->name('products.deactivate');
+
+    Route::post('/loans/authorization/{loan}/upload', [LoanController::class, 'uploadAuthorization'])->name('loan.authorization.upload');
+
+    Route::put('/loans/{loan}/approve', [LoanController::class, 'manualApproval'])->name('loan.approval');
 });
 
 Route::get('/states', [LoanController::class, 'listStates'])->name('states.list');

@@ -72,7 +72,7 @@ class GiroService
         $request_log->narration = 'Getting list of bank accounts';
         $request_log->source = $source;
         $request_log->end_point = $url;
-        $request_log->tran_id = time();
+        // $request_log->tran_id = time();
         $request_log->request_payload = json_encode([]);
 
 
@@ -99,7 +99,7 @@ class GiroService
         $request_log->narration = "Getting details for bank account $accountId";
         $request_log->source = $source;
         $request_log->end_point = $url;
-        $request_log->tran_id = time();
+        // $request_log->tran_id = time();
         $request_log->request_payload = json_encode([]);
 
 
@@ -178,7 +178,7 @@ class GiroService
         $request_log->narration = $narration;
         $request_log->source = $source;
         $request_log->end_point = $url;
-        $request_log->tran_id = time();
+        // $request_log->tran_id = time();
         $request_log->request_payload = json_encode($requestData);
 
         $response = Http::withHeaders([

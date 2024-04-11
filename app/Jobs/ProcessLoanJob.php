@@ -46,6 +46,8 @@ class ProcessLoanJob implements ShouldQueue
                 //Do Assessment
                 $offer = $loan->calculateOffer($remitaResponse);
 
+                dump($offer);
+
                 $loan->remita_customer_id = $remitaResponse['data']['customerId'];
 
                 if($offer >= $loan->amount){
@@ -56,18 +58,26 @@ class ProcessLoanJob implements ShouldQueue
                     $loan->total_repayment_amount = $loan->amount + $loan->total_interest;
     
                     $loan->approved_amount = $loan->amount;
+
+                    $loan->status = Status::APPROVED;
                         
                     $loan->save();
-    
-                    $digiSign = new DigisignService();
-    
-                    $digisignResponse = $digiSign->transformTemplate($loan);
 
-                    if(isset($digisignResponse['data']['status']) && ($digisignResponse['data']['status'] == 'success' || $digisignResponse['data']['status'] == 'pending')){
-                        $loan->document_id = $digisignResponse['data']['public_id'];
+                    if($loan->user->email){
+                        $digiSign = new DigisignService();
+    
+                        $digisignResponse = $digiSign->transformTemplate($loan);
+    
+                        if(isset($digisignResponse['data']['status']) && ($digisignResponse['data']['status'] == 'success' || $digisignResponse['data']['status'] == 'pending')){
+                            $loan->document_id = $digisignResponse['data']['public_id'];
+                            $loan->status = Status::PENDING_CONFIRMATION;
+                        }
+                        $loan->save();    
+                    }else{
+                        $loan->status = Status::PENDING_CONFIRMATION;
+                        $loan->save();
                     }
-                    $loan->save();
-
+    
                 }else{
                     $loan->status = Status::REJECTED;
 

@@ -221,7 +221,7 @@ class RemitaService
         ];
         $data = [
             "customerId" => $requestData["customerId"],
-            "authorisationCode" => isset($requestData["authorisationCode"]) ? $requestData["authorisationCode"] : uuid_create(),
+            "authorisationCode" => isset($requestData["authorisationCode"]) ? $requestData["authorisationCode"] : "848730",
             "authorisationChannel" => isset($requestData["authorisationChannel"]) ? $requestData["authorisationChannel"] : 'USSD',
             "phoneNumber" => $requestData["phoneNumber"],
             "accountNumber" => $requestData["accountNumber"],
@@ -235,6 +235,7 @@ class RemitaService
             "bankCode" => $requestData["bankCode"]
         ];
 
+        Log::info('disbursement notification: ', $data);
 
         $endpoint = "/loansvc/data/api/v2/payday/post/loan";
         $uri = $this->baseUri . $endpoint;

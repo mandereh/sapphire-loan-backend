@@ -18,6 +18,7 @@ class PermissionsTableSeeder extends Seeder
             'review-loan',
             'approve-loan',
             'view-loan',
+            'view-all-loans',
             'edit-loan',
             'request-penalty-waiver',
             'approve-penalty-waiver',
