@@ -39,30 +39,14 @@ class ApiTestController
      return $this->remitaService->getSalaryHistory($data);
 
     }
-    public function getRemitaSalaryHistoryByPhonenumber()
+
+    public function loanDisbursementNotificationController()
     {
+        $authorizationCode = uuid_create();
 
-           $data = [
-                "authorisationCode"=> $this->authorizationCode,
-                "firstName"=> "Daerego",
-                "lastName"=> "Braide",
-                "middleName"=> "R",
-                "accountNumber"=> "0235012284",
-                "phoneNumber"=> "07068541504",
-                "bankCode"=> "023",
-                "bvn"=> "22222222223",
-                "authorisationChannel"=> "USSD"
-           ];
-
-     return $this->remitaService->getSalaryHistory($data);
-
-    }
-
-    public function loanDisburstmentNotificationController()
-    {
         $data = [
             "customerId" => "1366",
-            "authorisationCode" => "1067808",
+            "authorisationCode" => "848730",
             "authorisationChannel" => "USSD",
             "phoneNumber" => "08154567478",
             "accountNumber" => "0235012284",
@@ -76,7 +60,7 @@ class ApiTestController
             "bankCode" => "023"
         ];
 
-        return $this->remitaService->loanDisbursementNotification($data);
+        return $this->remitaService->loanDisburstmentNotification($data);
     }
 
     public function mandateHistoryController()
