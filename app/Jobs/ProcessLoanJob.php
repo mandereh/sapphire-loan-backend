@@ -6,6 +6,7 @@ use App\Constants\Status;
 use App\ExternalServices\DigisignService;
 use App\ExternalServices\RemitaService;
 use App\Models\Loan;
+use App\Models\ScheduledDeduction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -56,12 +57,27 @@ class ProcessLoanJob implements ShouldQueue
                     $loan->total_interest = $loan->amount * $loan->rate * $loan->tenor/100;
                         
                     $loan->total_repayment_amount = $loan->amount + $loan->total_interest;
+
+                    $loan->balance = $loan->total_repayment_amount;
     
                     $loan->approved_amount = $loan->amount;
 
                     $loan->status = Status::APPROVED;
                         
                     $loan->save();
+
+                    $tenor = $loan->tenor;
+                    $monthlyRepayment = round($loan->total_repayment_amount / $loan->tenor);
+                    $monthsToAdd = 1;
+                    while($tenor > 0){
+                        ScheduledDeduction::create([
+                            'loan_id' => $loan->id,
+                            'balance' => $monthlyRepayment,
+                            'due_date' => today()->addMonths($monthsToAdd)
+                        ]);
+                        $monthsToAdd;
+                        $tenor--;
+                    }
 
                     if($loan->user->email){
                         $digiSign = new DigisignService();

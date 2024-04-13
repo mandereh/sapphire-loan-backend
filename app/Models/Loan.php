@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
 use App\Models\LoanType;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\ScheduledDeduction;
 
 class Loan extends Model
 {
@@ -137,5 +139,16 @@ class Loan extends Model
         $offerAmount = $netOfferAmount - ($netOfferAmount * ($this->loanType->rate/100));
 
         return $offerAmount;
+    }
+
+
+    /**
+     * Get all of the scheduledDeduction for the Loan
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function scheduledDeduction(): HasMany
+    {
+        return $this->hasMany(scheduledDeduction::class);
     }
 }

@@ -216,7 +216,7 @@ class LoanController extends Controller
 
         $this->authorize('update', $loan);
 
-        $filePath = $request->file('authorization_file')->store('public/authorization/audio_files');
+        $filePath = $request->file('authorization_file')->store();
         
         $filePath = explode('/', $filePath);
 
@@ -262,9 +262,9 @@ class LoanController extends Controller
     }
 
     //Manual disbursement initiated by finance
-    public function manualDisbursement(){
+    // public function manualDisbursement(){
 
-    }
+    // }
 
     // View All loans with ability to search by loanID, customer name, customer organization, customer mobile number
     public function viewAllLoans(){
