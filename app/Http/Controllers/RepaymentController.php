@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Loan;
 use App\Models\PaymentMethod;
+use App\Models\Repayment;
+use App\Models\ScheduledDeduction;
 use Illuminate\Http\Request;
 
 class RepaymentController extends Controller
@@ -10,7 +13,7 @@ class RepaymentController extends Controller
     //
     public function handleCollectionNotification(Request $request)
     {
-        //Check that reference does not exist in  repayments table already
+        //Check that reference does not exist in repayments table already
 
         //fetch loan using mandate reference
 
@@ -23,18 +26,61 @@ class RepaymentController extends Controller
     }
 
 
-    private function acknowledgeCollectionNotification(array $all)
+    private function acknowledgeCollectionNotification($all)
     {
+
+        if (Repayment::where('reference',$all['data']['mandateReference'])->exists()){
+            return response()->json(['message'=>'Repayment already exists'], 400);
+        }
+        $loan = Loan::where('mandate_reference',$all['data']['mandateReference'])->first();
+        $loan->balance = $loan->balance - $all['data']['amount'];
+        $loan->status = $loan->balance <= 0 ? 'completed' : $loan->status;
+        $loan->save();
+
+        $scheduledDeduction = new ScheduledDeduction();
+        $scheduledDeduction->loan_id = $loan->id;
+        $scheduledDeduction->balance = $scheduledDeduction->balance - $all['data']['amount'];
+        $scheduledDeduction->due_date = now()->format('d-m-Y h:i:s+0000');
+        $scheduledDeduction->save();
+
+        Repayment::create([
+            'loan_id'=>$loan->id,
+            'amount'=>$all['data']['amount'],
+            'reference'=>$all['data']['mandateReference'],
+            'payment_method_id'=> 4
+        ]);
 
     }
 
     //Search by LoanID or payment method (Remita or Transfer)
-    public function viewRepayments(){
+    public function viewRepayments(Request $request){
 
+        $request->validate([
+            'loanId' => 'required|numeric|exists:loans,id',
+            'paymentMethodId' => 'required|numeric|exists:payment_methods,id'
+        ]);
+
+        $loanId = $request->input('loanId');
+        $paymentMethodId = $request->input('paymentMethodId');
+
+        $query = Repayment::query();
+
+        if($loanId){
+            $query->where('loan_id', $loanId);
+        }
+        if ($paymentMethodId){
+            $query->where('payment_method',$paymentMethodId);
+        }
+        $repayments = $query->get();
+        return response()->json([
+            'message' => 'Retrieved repayments successfully',
+            'data'=>$repayments,
+        ], 200);
     }
 
     public function manualDeductionSetup(){
         // check if status is pending deduction
+
 
         // setup deduction on remita //CHECK DisburseLoan job for snippet
     }
@@ -50,14 +96,46 @@ class RepaymentController extends Controller
     }
 
     // Finance can create manual repayment for repayments where notification didn't come through Remita
-    public function createManualRepayment(){
-        //Check that reference does not exist in  repayments table already
-
+    public function createManualRepayment(Request $request){
+        $request->validate([
+           'loanId'=>'required|exists:loans,id',
+            'amount'=>'required|numeric',
+            'reference'=>'required|string',
+            'paymentMethodId'=>'required|exists:payment_methods,id'
+        ]);
+        //Check that reference does not exist in repayments table already
+        if (Repayment::where('reference', $request->input('reference'))->exists()) {
+            return response()->json(['message'=>'Repayment already exists'], 400);
+        }
         //fetch loan using mandate reference
-
+        $loan = Loan::find($request->input('loanId'));
         //Reduce loan balance and update status to completed if balance is less than or equal to zero
-
+        $loan->balance -= $request->input('amount');
+        $loan->status = $loan->balance <= 0 ? 'completed' : $loan->status;
+        $loan->save();
         //Update the scheduled deductions based on amounts paid for this loan reducing the balances
+        $scheduledDeduction = new ScheduledDeduction();
+        $scheduledDeduction->loanId = $request->input('loanId');
+        $scheduledDeduction->balance = $scheduledDeduction->balance - $request->input('amount');
+        $scheduledDeduction->due_date = now()->format('d-m-Y h:i:s+0000');
+        $scheduledDeduction->save();
+        //Save repayment
+        $repayment = Repayment::create([
+            'loan_id'=>$loan->id,
+            'amount'=>$request->input('amount'),
+            'reference'=>$request->input('reference'),
+            'payment_method_id'=>$request->input('paymentMethodId')
+        ]);
+        return response()->json([
+            'message'=>'Repayment created successfully',
+            'data'=>[
+            'repayment' => $repayment,
+            'loan'=>$loan,
+            'scheduledDeduction'=>$scheduledDeduction
+            ]
+        ], 201);
+
+
 
     }
 }
