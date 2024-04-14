@@ -87,3 +87,8 @@ Route::post('/user/register', [UserController::class, 'register'])->name('regist
 Route::post('/loan/apply', [LoanController::class, 'apply'])->name('loan.apply');
 
 Route::post('/collection-notification', [RepaymentController::class, 'handleCollectionNotification']);
+
+//Repayments
+Route::post('/repayments/createManualRepayment', [RepaymentController::class, 'createManualRepayment']);
+Route::post('/repayments/listPaymentMethods', [RepaymentController::class, 'listPaymentMethods']);
+Route::post('/repayments/viewRepayments', [RepaymentController::class, 'viewRepayments']);
