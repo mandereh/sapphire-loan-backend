@@ -60,6 +60,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
 
     Route::get('/loans', [LoanController::class, 'listLoans'])->name('loans.list');
 
+    Route::get('/loans/{loan}/details', [LoanController::class, 'details'])->name('loans.details');
+
     Route::get('/products', [ProductController::class, 'index'])->name('products');
 
     Route::post('/products/new', [ProductController::class, 'store'])->name('products.store');

@@ -45,6 +45,15 @@ class LoanPolicy
         return $user->hasPermissionTo('edit-user') && ($user->id === $loan->reffered_by_id);
     }
 
+     /**
+     * Determine whether the user can upload auth to the model.
+     */
+    public function uploadAuth(User $user, Loan $loan): bool
+    {
+        //
+        return $user->hasPermissionTo('edit-user') && ($user->id === $loan->reffered_by_id);
+    }
+
     /**
      * Determine whether the user can approve the model.
      */
