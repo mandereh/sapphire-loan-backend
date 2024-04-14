@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 
 class RepaymentController extends Controller
@@ -16,9 +17,9 @@ class RepaymentController extends Controller
         //Reduce loan balance and update status to completed if balance is less than or equal to zero
 
         //Update the scheduled deductions based on amounts paid for this loan reducing the balances
-        
+
         $this->acknowledgeCollectionNotification($request->all());
-        return response()->json(['message'=>'Webhook recieved successfully'], 200);
+        return response()->json(['message'=>'Webhook received successfully'], 200);
     }
 
 
@@ -34,12 +35,18 @@ class RepaymentController extends Controller
 
     public function manualDeductionSetup(){
         // check if status is pending deduction
-        
+
         // setup deduction on remita //CHECK DisburseLoan job for snippet
     }
 
     public function listPaymentMethods(){
-        
+        $response = [
+            'status_code' => '00',
+            'message' => "Retrieved payment methods Successfully",
+            'data' => PaymentMethod::all()
+        ];
+        $statusCode = 200;
+        return response($response, $statusCode);
     }
 
     // Finance can create manual repayment for repayments where notification didn't come through Remita
@@ -51,6 +58,6 @@ class RepaymentController extends Controller
         //Reduce loan balance and update status to completed if balance is less than or equal to zero
 
         //Update the scheduled deductions based on amounts paid for this loan reducing the balances
-        
+
     }
 }
