@@ -23,3 +23,4 @@ Route::get('/', function () {
 
 Route::get('leads/template/download',[\App\Http\Controllers\LeadController::class,'downloadLeadsTemplate']);
 Route::any('digisign/webhook',[\App\Http\Controllers\digisignWebhookController::class,'webhook']);
+Route::any('repayments/collectionNotification',[\App\Http\Controllers\RepaymentController::class,'handleCollectionNotification']);

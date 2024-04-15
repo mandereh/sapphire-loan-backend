@@ -13,6 +13,13 @@ class Repayment extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $fillable = [
+        'loan_id',
+        'amount',
+        'reference',
+        'payment_method_id',
+    ];
+
     /**
      * Get the loan that owns the Repayment
      *
