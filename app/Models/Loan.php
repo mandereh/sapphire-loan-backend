@@ -34,7 +34,7 @@ class Loan extends Model
      */
     public function referrer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id', 'reffered_by');
+        return $this->belongsTo(User::class, 'reffered_by_id', 'id');
     }
 
     /**
@@ -44,7 +44,7 @@ class Loan extends Model
      */
     public function relationshipManager(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id', 'relationship_manager');
+        return $this->belongsTo(User::class, 'relationship_manager_id', 'id');
     }
 
     /**
@@ -52,9 +52,9 @@ class Loan extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function product(): HasOne
+    public function product(): BelongsTo
     {
-        return $this->hasOne(Product::class);
+        return $this->belongsTo(Product::class);
     }
 
     /**

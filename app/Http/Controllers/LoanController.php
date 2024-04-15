@@ -25,6 +25,11 @@ class LoanController extends Controller
     public function listLoans(Request $request){
         $loans = new Loan();
 
+        if(!$request->user()->hasPermissionTo('view-all-loans')){
+            $loans = $loans->where('reffered_by_id', auth()->id())
+                            ->orWhere('relationship_manager_id', auth()->id());
+        }
+
         if($request->filterStatus){
             $loans = $loans->where('status', $request->statusFilter);
         }
@@ -235,6 +240,18 @@ class LoanController extends Controller
 
         $statusCode = 200;
         
+        return response($resp, $statusCode);
+    }
+
+    public function details($loan){
+        $resp = [
+            'status_code' => '00',
+            'message' => "Loan details retrieved",
+            'data' => Loan::where('id', $loan)->with('user')->with('loanType')->with('state')->with('product')->with('referrer')->with('relationshipManager')->firstOrFail()
+        ];
+
+        $statusCode = 200;
+
         return response($resp, $statusCode);
     }
 
