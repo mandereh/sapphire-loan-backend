@@ -74,7 +74,7 @@ class RepaymentController extends Controller
             $query->where('loan_id', $loanId);
         }
         if ($paymentMethodId){
-            $query->where('payment_method',$paymentMethodId);
+            $query->where('payment_method_id',$paymentMethodId);
         }
         $repayments = $query->get();
         return response()->json([
