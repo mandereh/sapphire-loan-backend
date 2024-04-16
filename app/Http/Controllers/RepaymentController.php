@@ -7,6 +7,7 @@ use App\Models\PaymentMethod;
 use App\Models\Repayment;
 use App\Models\ScheduledDeduction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class RepaymentController extends Controller
 {
@@ -40,7 +41,7 @@ class RepaymentController extends Controller
         $scheduledDeduction = new ScheduledDeduction();
         $scheduledDeduction->loan_id = $loan->id;
         $scheduledDeduction->balance = $scheduledDeduction->balance - $all['data']['amount'];
-        $scheduledDeduction->due_date = now()->format('d-m-Y h:i:s+0000');
+        $scheduledDeduction->due_date = now()->format('Y-m-d H:i:s');
         $scheduledDeduction->save();
 
         Repayment::create([
@@ -55,10 +56,14 @@ class RepaymentController extends Controller
     //Search by LoanID or payment method (Remita or Transfer)
     public function viewRepayments(Request $request){
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'loanId' => 'required|numeric|exists:loans,id',
             'paymentMethodId' => 'required|numeric|exists:payment_methods,id'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
 
         $loanId = $request->input('loanId');
         $paymentMethodId = $request->input('paymentMethodId');
@@ -69,7 +74,7 @@ class RepaymentController extends Controller
             $query->where('loan_id', $loanId);
         }
         if ($paymentMethodId){
-            $query->where('payment_method',$paymentMethodId);
+            $query->where('payment_method_id',$paymentMethodId);
         }
         $repayments = $query->get();
         return response()->json([
@@ -97,12 +102,19 @@ class RepaymentController extends Controller
 
     // Finance can create manual repayment for repayments where notification didn't come through Remita
     public function createManualRepayment(Request $request){
-        $request->validate([
-           'loanId'=>'required|exists:loans,id',
+
+        $validator = Validator::make($request->all(), [
+            'loanId'=>'required|exists:loans,id',
             'amount'=>'required|numeric',
             'reference'=>'required|string',
             'paymentMethodId'=>'required|exists:payment_methods,id'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+
         //Check that reference does not exist in repayments table already
         if (Repayment::where('reference', $request->input('reference'))->exists()) {
             return response()->json(['message'=>'Repayment already exists'], 400);
