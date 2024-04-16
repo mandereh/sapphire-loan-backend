@@ -12,6 +12,12 @@ class ScheduledDeduction extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'loan_id',
+        'balance',
+        'due_date'
+    ];
+
     /**
      * Get the loan that owns the RepaymentSchedule
      *
