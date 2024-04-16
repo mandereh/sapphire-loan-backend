@@ -79,7 +79,7 @@ class LoanController extends Controller
 
         $loan->reffered_by_id = $request->reffered_by;
 
-        $product = Product::findOrFail($loan->product_id);
+        $product = Product::find($loan->product_id);
 
         if($product && $loan->loan_type_id == 2){
             $loan->amount = $product->price;
