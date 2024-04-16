@@ -28,11 +28,15 @@ class digisignWebhookController extends Controller
         }
 
         if(isset($request->type) && ($request->type == 'document.completed' || $request->type == 'document.signed')){
+
+            Log::debug('lala system', $request->type);
             $publicId = $request->event_data['request']['public_id'];
 
             $loan = Loan::where('document_id', $publicId)->firstOrFail();
 
-            if($loan->status == Status::APPROVED){
+            Log::debug('lala system', $request->type);
+
+            if($loan->status == Status::CONFIRMATION_SENT){
                 DisburseLoan::dispatch($loan)
                                 ->onQueue('processLoans');
             }else{

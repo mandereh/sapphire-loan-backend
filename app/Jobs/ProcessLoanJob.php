@@ -86,7 +86,7 @@ class ProcessLoanJob implements ShouldQueue
     
                         if(isset($digisignResponse['data']['status']) && ($digisignResponse['data']['status'] == 'success' || $digisignResponse['data']['status'] == 'pending')){
                             $loan->document_id = $digisignResponse['data']['public_id'];
-                            $loan->status = Status::PENDING_CONFIRMATION;
+                            $loan->status = Status::CONFIRMATION_SENT;
                         }
                         $loan->save();    
                     }else{
