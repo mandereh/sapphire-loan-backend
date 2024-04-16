@@ -365,11 +365,11 @@ class RemitaService
             $percentPayed = $repaymentAmount * $percentPayed;
             $details[] = [
                 "loanProvider" => "*******",
-                "loanAmount" => $repaymentAmount * 80/100,
+                "loanAmount" => $repaymentAmount * 50/100,
                 "outstandingAmount" => $repaymentAmount - $percentPayed,
                 "loanDisbursementDate" => "19-08-2021 00:00:00+0000",
                 "status" => "NEW",
-                "repaymentAmount" => $repaymentAmount,
+                "repaymentAmount" => $repaymentAmount * 50/100,
                 "repaymentFreq" => "MONTHLY"
             ];
             $times--;
