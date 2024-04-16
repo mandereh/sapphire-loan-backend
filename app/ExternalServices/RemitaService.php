@@ -296,7 +296,7 @@ class RemitaService
     private function dummyData(){
         $monthlyPay = round(mt_rand(200000, 1000000), -3);
         $loanLength = mt_rand(1, 3);
-        $repaymentAmount = round(mt_rand(30000, 200000), -3);
+        $repaymentAmount = round(mt_rand(200000, 1000000), -3);
 
         $responseData = [
             "status" => "success",
