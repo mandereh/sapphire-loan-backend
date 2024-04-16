@@ -27,7 +27,7 @@ class digisignWebhookController extends Controller
             $loan->save();
         }
 
-        if(isset($request->type) && $request->type == 'document.completed'){
+        if(isset($request->type) && ($request->type == 'document.completed' || $request->type == 'document.signed')){
             $publicId = $request->event_data['request']['public_id'];
 
             $loan = Loan::where('document_id', $publicId)->firstOrFail();
