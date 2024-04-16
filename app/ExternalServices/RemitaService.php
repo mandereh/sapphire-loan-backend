@@ -361,7 +361,7 @@ class RemitaService
         $times = $loanLength;
         $details = [];
         while($times > 0){
-            $percentPayed = mt_rand(0.05,0.9);
+            $percentPayed = mt_rand(0.5,0.9);
             $percentPayed = $repaymentAmount * $percentPayed;
             $details[] = [
                 "loanProvider" => "*******",
