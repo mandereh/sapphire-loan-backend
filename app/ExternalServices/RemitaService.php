@@ -235,7 +235,7 @@ class RemitaService
             "bankCode" => $requestData["bankCode"]
         ];
 
-        Log::info('disbursement notification: ', $data);
+        // Log::info('disbursement notification: ', $data);
 
         $endpoint = "/loansvc/data/api/v2/payday/post/loan";
         $uri = $this->baseUri . $endpoint;
