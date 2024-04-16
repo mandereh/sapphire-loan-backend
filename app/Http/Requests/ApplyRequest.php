@@ -23,7 +23,7 @@ class ApplyRequest extends FormRequest
     {
         return [
             'loan_type' => 'required|numeric|exists:loan_types,id',
-            'product_id' => 'required_if:loan_type,2|numeric|exists:products,id',
+            'product_id' => 'required_if:loan_type,2',
             'organization' => 'required',
             'amount' => 'required|numeric',
             'address' => 'required|string|max:255',
