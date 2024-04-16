@@ -138,6 +138,7 @@ class Loan extends Model
 
         $offerAmount = $netOfferAmount - ($netOfferAmount * ($this->loanType->rate/100));
 
+        // dump($disposableIncome, $netOfferAmount, $offerAmount);
         return $offerAmount;
     }
 
