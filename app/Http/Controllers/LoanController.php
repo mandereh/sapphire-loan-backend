@@ -92,7 +92,7 @@ class LoanController extends Controller
 
         $referrer = User::where('refferal_code', $request->reffered_by)->first();
 
-        $loan->reffered_by = $referrer->id;
+        $loan->reffered_by_id = $referrer->id;
 
         $loan->state_id = $request->state;
 
