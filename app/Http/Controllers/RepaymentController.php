@@ -12,46 +12,108 @@ use Illuminate\Support\Facades\Validator;
 class RepaymentController extends Controller
 {
     //
+//    public function handleCollectionNotification(Request $request)
+//    {
+//        //Check that reference does not exist in repayments table already
+//
+//        //fetch loan using mandate reference
+//
+//        //Reduce loan balance and update status to completed if balance is less than or equal to zero
+//
+//        //Update the scheduled deductions based on amounts paid for this loan reducing the balances
+//
+//        $this->acknowledgeCollectionNotification($request->all());
+//        return response()->json(['message'=>'Webhook received successfully'], 200);
+//    }
+
+
     public function handleCollectionNotification(Request $request)
     {
-        //Check that reference does not exist in repayments table already
+        // Parse the webhook data
+        $requestData = $request->all();
 
-        //fetch loan using mandate reference
-
-        //Reduce loan balance and update status to completed if balance is less than or equal to zero
-
-        //Update the scheduled deductions based on amounts paid for this loan reducing the balances
-
-        $this->acknowledgeCollectionNotification($request->all());
-        return response()->json(['message'=>'Webhook received successfully'], 200);
-    }
-
-
-    private function acknowledgeCollectionNotification($all)
-    {
-
-        if (Repayment::where('reference',$all['data']['mandateReference'])->exists()){
+        // Check if the webhook data is empty
+        if(empty($requestData)){
+            return response()->json(['message' => 'Webhook data is empty'], 400);
+        }
+        // Check if the webhook data contains the 'data' key
+        if(!array_key_exists('data', $requestData)){
+            return response()->json(['message' => 'Webhook data does not contain the data key'], 400);
+        }
+        // Check if the webhook data contains the 'mandateReference' key
+        if(!array_key_exists('mandateReference', $requestData['data'])){
+            return response()->json(['message' => 'Webhook data does not contain the mandateReference key'], 400);
+        }
+        // Check if the webhook data contains the 'amount' key
+        if(!array_key_exists('amount', $requestData['data'])){
+            return response()->json(['message' => 'Webhook data does not contain the amount key'], 400);
+        }
+        // Check that reference does not exist in repayments table already
+        if (Repayment::where('reference', $requestData['data']['mandateReference'])->exists()) {
             return response()->json(['message'=>'Repayment already exists'], 400);
         }
-        $loan = Loan::where('mandate_reference',$all['data']['mandateReference'])->first();
-        $loan->balance = $loan->balance - $all['data']['amount'];
+
+        // Fetch the loan using the mandate reference from the webhook data
+        $loan = Loan::where('mandate_reference', $requestData['data']['mandateReference'])->first();
+
+        // Get the total repayment amount from the webhook data
+        $totalRepaymentAmount = $requestData['data']['amount'];
+
+        // Reduce the loan balance by the total repayment amount
+        $loan->balance -= $totalRepaymentAmount;
+
+        // Update the loan status to 'completed' if the balance is less than or equal to zero
         $loan->status = $loan->balance <= 0 ? 'completed' : $loan->status;
+
+        // Save the changes to the loan
         $loan->save();
 
-        $scheduledDeduction = new ScheduledDeduction();
-        $scheduledDeduction->loan_id = $loan->id;
-        $scheduledDeduction->balance = $scheduledDeduction->balance - $all['data']['amount'];
-        $scheduledDeduction->due_date = now()->format('Y-m-d H:i:s');
-        $scheduledDeduction->save();
-
+        //Populate the repayment table
         Repayment::create([
-            'loan_id'=>$loan->id,
-            'amount'=>$all['data']['amount'],
-            'reference'=>$all['data']['mandateReference'],
-            'payment_method_id'=> 4
+            'loan_id' => $loan->id,
+            'amount' => $totalRepaymentAmount,
+            'reference' => $requestData['data']['mandateReference'],
+            'payment_method_id' => 4
         ]);
 
+        // Fetch the scheduled deductions for the loan
+        $scheduledDeductions = ScheduledDeduction::where('loan_id', $loan->id)
+            ->where('status', 'active')
+            ->orWhere('balance', '>', 0)
+            ->get();
+
+        foreach($scheduledDeductions as $scheduledDeduction) {
+            $balance = 0;
+            $status = 'active';
+
+            if($totalRepaymentAmount >= $scheduledDeduction->balance){
+                $balance = 0;
+                $status = 'completed';
+
+                $actualSpent = $scheduledDeduction->balance;
+            }else{
+                $balance = $scheduledDeduction->balance - $totalRepaymentAmount;
+
+                $actualSpent = $totalRepaymentAmount;
+            }
+
+            $scheduledDeduction->balance = $balance;
+            $scheduledDeduction->status = $status;
+
+            // Save the changes to the scheduled deduction
+            $scheduledDeduction->save();
+
+            $totalRepaymentAmount -= $actualSpent;
+
+            if($totalRepaymentAmount <= 0){
+                break;
+            }
+        }
+
+        // Return a response
+        return response()->json(['message' => 'Webhook handled successfully'], 200);
     }
+
 
     //Search by LoanID or payment method (Remita or Transfer)
     public function viewRepayments(Request $request){
@@ -125,12 +187,7 @@ class RepaymentController extends Controller
         $loan->balance -= $request->input('amount');
         $loan->status = $loan->balance <= 0 ? 'completed' : $loan->status;
         $loan->save();
-        //Update the scheduled deductions based on amounts paid for this loan reducing the balances
-        $scheduledDeduction = new ScheduledDeduction();
-        $scheduledDeduction->loanId = $request->input('loanId');
-        $scheduledDeduction->balance = $scheduledDeduction->balance - $request->input('amount');
-        $scheduledDeduction->due_date = now()->format('d-m-Y h:i:s+0000');
-        $scheduledDeduction->save();
+
         //Save repayment
         $repayment = Repayment::create([
             'loan_id'=>$loan->id,
@@ -138,16 +195,57 @@ class RepaymentController extends Controller
             'reference'=>$request->input('reference'),
             'payment_method_id'=>$request->input('paymentMethodId')
         ]);
+
+        // Fetch the scheduled deductions for the loan
+        $scheduledDeductions = ScheduledDeduction::where('loan_id', $loan->id)
+            ->where('status', 'active')
+            ->orWhere('balance', '>', 0)
+            ->get();
+        //Update the scheduled deductions based on amounts paid for this loan reducing the balances
+        foreach($scheduledDeductions as $scheduledDeduction) {
+            $balance = 0;
+            $status = 'active';
+
+            $totalRepaymentAmount = $request->input('amount');
+
+            if($totalRepaymentAmount >= $scheduledDeduction->balance){
+                $balance = 0;
+                $status = 'completed';
+
+                $actualSpent = $scheduledDeduction->balance;
+            }else{
+                $balance = $scheduledDeduction->balance - $totalRepaymentAmount;
+
+                $actualSpent = $totalRepaymentAmount;
+            }
+
+            $scheduledDeduction->balance = $balance;
+            $scheduledDeduction->status = $status;
+
+            // Save the changes to the scheduled deduction
+            $scheduledDeduction->save();
+
+            $totalRepaymentAmount -= $actualSpent;
+
+            if($totalRepaymentAmount <= 0){
+                break;
+            }
+        }
+
         return response()->json([
             'message'=>'Repayment created successfully',
             'data'=>[
             'repayment' => $repayment,
             'loan'=>$loan,
-            'scheduledDeduction'=>$scheduledDeduction
+            'scheduledDeduction'=>$scheduledDeductions->toArray()
             ]
         ], 201);
 
 
 
     }
+
+
+
+
 }
