@@ -22,7 +22,7 @@ class UpdateLoanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'authorization_file' => 'required|file|max:10240'
+            'authorization_file' => 'required|max:10240'
         ];
     }
 }
