@@ -42,7 +42,8 @@ class LoanPolicy
     public function update(User $user, Loan $loan): bool
     {
         //
-        return $user->hasPermissionTo('edit-user') && ($user->id === $loan->reffered_by_id);
+        return $user->hasPermissionTo('edit-user');
+        // && ($user->id === $loan->reffered_by_id);
     }
 
      /**
