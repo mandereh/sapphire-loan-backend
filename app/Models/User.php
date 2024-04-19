@@ -30,7 +30,9 @@ class User extends Authenticatable
         'password',
         'active',
         'refferal_code',
-        'ippis_number'
+        'ippis_number',
+        'title',
+        'bvn'
     ];
 
     /**

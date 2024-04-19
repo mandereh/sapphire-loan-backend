@@ -62,6 +62,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
 
     Route::get('/loans/{loan}/details', [LoanController::class, 'details'])->name('loans.details');
 
+    Route::get('/loans/{loan}/affordability', [LoanController::class, 'verificationAffordability'])->name('loans.affordability');
+
     Route::get('/products', [ProductController::class, 'index'])->name('products');
 
     Route::post('/products/new', [ProductController::class, 'store'])->name('products.store');
@@ -73,6 +75,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
     Route::post('/loans/authorization/{loan}/upload', [LoanController::class, 'uploadAuthorization'])->name('loan.authorization.upload');
 
     Route::put('/loans/{loan}/approve', [LoanController::class, 'manualApproval'])->name('loan.approval');
+
+    Route::put('/loans/{loan}/reject', [LoanController::class, 'rejectLoan'])->name('loan.reject');
 });
 
 Route::get('/states', [LoanController::class, 'listStates'])->name('states.list');

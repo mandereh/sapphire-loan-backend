@@ -146,13 +146,13 @@ class RemitaService
      */
     public function getSalaryHistory(array $requestData)
     {
-        // $headers = [
-        //     'Content-Type' => 'application/json',
-        //     'API_KEY' => $this->apiKey,
-        //     'MERCHANT_ID' => $this->merchantId,
-        //     'REQUEST_ID' => $this->requestId,
-        //     'AUTHORIZATION' => $this->authorization,
-        // ];
+        $headers = [
+            'Content-Type' => 'application/json',
+            'API_KEY' => $this->apiKey,
+            'MERCHANT_ID' => $this->merchantId,
+            'REQUEST_ID' => $this->requestId,
+            'AUTHORIZATION' => $this->authorization,
+        ];
         // $data = [
         //     'authorisationCode' => $requestData['authorisationCode'],
         //     'firstName' => $requestData['firstName'],

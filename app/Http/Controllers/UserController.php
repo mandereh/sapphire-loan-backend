@@ -19,7 +19,7 @@ class UserController extends Controller
     public function userDetails(Request $request){
         $resp = [
             'status_code' => '00',
-            'message' => "User details retrieved",
+            'message' => "User created successfully",
             'data' => $request->user()
         ];
 
@@ -46,6 +46,7 @@ class UserController extends Controller
             'email' => $email,
             'phone_number' => $request->phone_number,
             'ippis_number' => $request->ippis_number,
+            'bvn' => $request->bvn,
             'date_of_birth' => $request->date_of_birth,
             'gender' => $request->gender,
             'password' => Hash::make(Str::random(8)),
@@ -126,7 +127,7 @@ class UserController extends Controller
         //$user->tokens()->delete();
 
         //Update user last login
-        $token = $user->createToken($request->header('appName'), $user->allPermissions()->toArray())->plainTextToken;
+        $token = $user->createToken($request->header('appName', 'staffPortal'), $user->allPermissions()->toArray())->plainTextToken;
 
         Event::dispatch(new Login(auth()->guard(), $user, false));
 
@@ -138,6 +139,7 @@ class UserController extends Controller
             'status_code' => '00',
             'message' => "Token retrieved",
             'token' => $token,
+            'tokenExpiry' => now()->addMinutes(117),
             'permissions' => $user->allPermissions()
         ];
 

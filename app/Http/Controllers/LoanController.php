@@ -16,7 +16,9 @@ use App\Models\LoanType;
 use App\Models\Organization;
 use App\Models\Product;
 use App\Models\State;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LoanController extends Controller
 {
@@ -26,19 +28,21 @@ class LoanController extends Controller
         $loans = new Loan();
 
         if(!$request->user()->hasPermissionTo('view-all-loans')){
-            $loans = $loans->where('reffered_by_id', auth()->id())
+            $loans = $loans->where(function($q){
+                $q->where('reffered_by_id', auth()->id())
                             ->orWhere('relationship_manager_id', auth()->id());
+            });
         }
 
         if($request->filterStatus){
-            $loans = $loans->where('status', $request->statusFilter);
+            $loans = $loans->where('status', $request->filterStatus);
         }
 
         if($request->filterLoanType){
             $loans = $loans->whereHas('loan_type_id', $request->filterLoanType);
         }
 
-        $loans = $loans->paginate();
+        $loans = $loans->with('user')->with('loanType')->with('state')->with('referrer')->latest()->paginate(10)->withQueryString();
 
         $resp = [
             'status_code' => '00',
@@ -67,11 +71,28 @@ class LoanController extends Controller
 
         $loan->city = $request->city;
 
+        $loan->state_id = $request->state;
+
         $loan->zipcode = $request->zipcode;
 
         $loan->salary_account_number = $request->account_number;
 
         $loan->bank_code = $request->bank_code;
+
+        $allBanks = (new GiroService())->getBanks('system');
+        
+        $result = array_filter($allBanks['data'], function($item) use($loan){
+            return $item['bankCode'] == $loan->bank_code;
+        });
+
+        if($result){
+            $key = array_key_first($result);
+            $loan->salary_bank = $result[$key]['name'];
+        }
+
+        $referrer = User::where('refferal_code', $request->reffered_by)->first();
+
+        $loan->reffered_by = $referrer->id;
 
         $loan->state_id = $request->state;
 
@@ -110,6 +131,64 @@ class LoanController extends Controller
         $statusCode = 200;
 
         return response($resp, $statusCode);
+    }
+
+    public function verificationAffordability(Request $request, Loan $loan){
+        $remitaService = new  RemitaService();
+
+        $data = [
+            'authorisationCode' => '',
+            'firstName' => $loan->user->first_name,
+            'lastName' => $loan->user->last_name,
+            'middleName' => '',
+            'accountNumber' => $loan->salary_account_number,
+            'bankCode' => $loan->bank_code,
+            'bvn' => $loan->user->bvn,
+            'authorisationChannel' => ''
+        ];
+
+        $remitaResponse = $remitaService->getSalaryHistory($data);
+
+        if($remitaResponse && $remitaResponse['responseCode'] == "00" && $remitaResponse['hasData']){
+            $validityCheck = $loan->validityCheck($remitaResponse);
+            $data = [
+                'remitaSearchData' =>  $remitaResponse['data'],
+                'remitaLoanData' =>  $remitaResponse['loanHistoryDetails'],
+                'affordabilityCheckData' => [
+                    'amount' => $loan->amount,
+                    'tenor' => $loan->tenor,
+                    'monthlyRepayment' => $validityCheck['monthlyRepayment'],
+                    'otherDeductions' => 0,
+                    'netPay' => $validityCheck['averageNetPay'],
+                    'remitaLoan' => 0,
+                    'disposableIncome' => $validityCheck['disposableIncome'],
+                    'customerQualificationStatus' => $validityCheck['offerAmount'] > 0
+                ]
+            ];
+
+            $resp = [
+                'status_code' => '00',
+                'message' => "Verification Affordability check successful",
+                'data' => $data
+            ];
+    
+            $statusCode = 200;
+    
+            return response($resp, $statusCode);
+        }else{
+            $resp = [
+            'status_code' => '50',
+            'message' => "Verification Affordability check failed",
+        ];
+
+        $statusCode = 500;
+
+        return response($resp, $statusCode);
+    }
+
+        
+
+        
     }
 
     public function listStates(){
@@ -255,6 +334,24 @@ class LoanController extends Controller
         return response($resp, $statusCode);
     }
 
+    public function rejectLoan($loan){
+        $this->authorize('approve', $loan);
+
+        $loan->status = Status::REJECTED;
+
+        $loan->save();
+
+        $resp = [
+            'status_code' => '00',
+            'message' => "Loan rejected successfully",
+            'data' => $loan->with('user')->with('loanType')->with('state')->with('product')->with('referrer')->with('relationshipManager')->firstOrFail()
+        ];
+
+        $statusCode = 200;
+
+        return response($resp, $statusCode);
+    }
+
     //Initiated by Risk
     public function manualApproval(Request $request, Loan $loan){
         $this->authorize('approve', $loan);
@@ -271,6 +368,7 @@ class LoanController extends Controller
         $resp = [
             'status_code' => '00',
             'message' => "Loan has been approved and pushed for disbursement",
+            'data' => $loan->with('user')->with('loanType')->with('state')->with('product')->with('referrer')->with('relationshipManager')->firstOrFail()
         ];
 
         $statusCode = 200;

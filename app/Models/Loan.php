@@ -12,6 +12,7 @@ use App\Models\Product;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\ScheduledDeduction;
+use App\Models\State;
 
 class Loan extends Model
 {
@@ -74,7 +75,7 @@ class Loan extends Model
      */
     public function state(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(State::class);
     }
 
     public function getUniqueReference(){
@@ -89,6 +90,18 @@ class Loan extends Model
     }
 
     public function calculateOffer(Array $remitaResponseData) : float{
+        $offerCheckResponse = $this->offerCheck($remitaResponseData);
+        // dump($disposableIncome, $netOfferAmount, $offerAmount);
+        return $offerCheckResponse['offerAmount'];
+    }
+
+    public function validityCheck(Array $remitaResponseData){
+        $offerCheckResponse = $this->offerCheck($remitaResponseData);
+        // dump($disposableIncome, $netOfferAmount, $offerAmount);
+        return $offerCheckResponse;
+    }
+
+    private function offerCheck($remitaResponseData) : Array{
         $averageMonthlySalary = 0;
 
         if(is_array($remitaResponseData['data']['salaryPaymentDetails'])){
@@ -138,8 +151,13 @@ class Loan extends Model
 
         $offerAmount = $netOfferAmount - ($netOfferAmount * ($this->loanType->rate/100));
 
-        // dump($disposableIncome, $netOfferAmount, $offerAmount);
-        return $offerAmount;
+        return [
+            'offerAmount' => $offerAmount,
+            'disposableIncome' => $disposableIncome,
+            'monthlyRepayment' => $totalRepaymentAmount/ $this->tenor,
+            'averageNetPay' => $averageMonthlySalary,
+            'otherDeductions' => 0,
+        ];
     }
 
 
