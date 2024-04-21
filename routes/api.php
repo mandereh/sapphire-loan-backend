@@ -96,3 +96,4 @@ Route::post('/collection-notification', [RepaymentController::class, 'handleColl
 Route::post('/repayments/createManualRepayment', [RepaymentController::class, 'createManualRepayment']);
 Route::get('/repayments/listPaymentMethods', [RepaymentController::class, 'listPaymentMethods']);
 Route::post('/repayments/viewRepayments', [RepaymentController::class, 'viewRepayments']);
+Route::post('/repayments/{loan}/manualDeductionSetup', [RepaymentController::class, 'manualDeductionSetup']);

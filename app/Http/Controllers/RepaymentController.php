@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\Status;
 use App\Models\Loan;
 use App\Models\PaymentMethod;
 use App\Models\Repayment;
@@ -145,11 +146,40 @@ class RepaymentController extends Controller
         ], 200);
     }
 
-    public function manualDeductionSetup(){
+    public function manualDeductionSetup(Loan $loan){
         // check if status is pending deduction
-
-
+        if ($loan->status === Status::PENDING_DISBURSEMENT) {
+            $response = [
+                'status_code' => '50',
+                'message' => "Loan not pending disbursement.",
+                'data'=>null
+            ];
+            return response($response, 500);
+        }
         // setup deduction on remita //CHECK DisburseLoan job for snippet
+        $giroService = new GiroService();
+        $giroResponse = $giroService->fundTransfer('callBack', $loan->salary_account_number, $loan->bank_code, config('services.giro.source_account'), $loan->amount, "Disbursement of loan to {$loan->user->phone_number} for {$loan->reference}", 'LD-'.$loan->reference);
+        if(isset($giroResponse['meta']) && $giroResponse['meta']['statusCode'] === 200 && $giroResponse['meta']['success']){
+            $loan->status = Status::DISBURSED;
+            $loan->save();
+            $response = [
+                'status_code' => '00',
+                'message' => "Loan Deduction setup confirmed",
+                'data'=>$loan
+            ];
+            return response($response, 201);
+        }
+
+        $loan->status = Status::FAILED;
+        $loan->failure_reason = 'Deduction setup failed';
+
+        $response = [
+            'status_code' => '50',
+            'message' => "Loan Deduction setup failed",
+            'data'=>null
+        ];
+        return response($response, 500);
+
     }
 
     public function listPaymentMethods(){
