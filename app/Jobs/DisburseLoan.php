@@ -85,7 +85,7 @@ class DisburseLoan implements ShouldQueue
                         $loan->save();
                     }
                 }
-                
+
             }else{
                 $loan->status = Status::FAILED;
 
