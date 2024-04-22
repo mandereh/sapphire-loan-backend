@@ -22,7 +22,7 @@ class GiroService
 
     public function getBanks(String $source)
     {
-        $endpoint = 'bank-accounts/banks';
+        $endpoint = '/transactions/banks';
 
         $url = $this->baseUrl . '/' . $endpoint;
 
@@ -116,7 +116,7 @@ class GiroService
 
     public function validateBankAccount(String $source, String $accountNumber, String $bankCode)
     {
-        $endpoint = 'bank-accounts/validate';
+        $endpoint = 'transactions/validate-account';
 
         $url = $this->baseUrl . '/' . $endpoint;
 
@@ -159,7 +159,7 @@ class GiroService
 
     public function fundTransfer(String $source, String $accountNumber, String $bankCode, String $sourceAccount, float $amount, String $narration, String $reference)
     {
-        $endpoint = 'virtual-accounts/transfer';
+        $endpoint = 'transactions/bank-transfer';
 
         $url = $this->baseUrl . '/' . $endpoint;
 
@@ -168,10 +168,11 @@ class GiroService
         $requestData = [
             "accountNumber" => $accountNumber,
             "bankCode" => $bankCode,
-            "sourceAccount" => $this->sourceAccount,
+            "source" => $this->sourceAccount,
             "amount" => $amount,
             "narration" => $narration,
-            "reference" => $reference
+            "reference" => $reference,
+            "currency" => 'NGN'
         ];
 
         $request_log->request_type = "post";

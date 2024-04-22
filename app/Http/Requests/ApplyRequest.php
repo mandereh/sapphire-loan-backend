@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\RunningLoan;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApplyRequest extends FormRequest
@@ -33,7 +34,7 @@ class ApplyRequest extends FormRequest
             'bank_code' => 'required|numeric',
             'state' => 'required|numeric|exists:states,id',
             'reffered_by' => 'nullable|numeric|exists:users,refferal_code',
-            'user_id' => 'required|numeric|exists:users,id',
+            'user_id' => ['required','numeric','exists:users,id', new RunningLoan()],
             'tenor' => 'required|numeric|min:1'
         ];
     }

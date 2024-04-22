@@ -77,6 +77,17 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
     Route::put('/loans/{loan}/approve', [LoanController::class, 'manualApproval'])->name('loan.approval');
 
     Route::put('/loans/{loan}/reject', [LoanController::class, 'rejectLoan'])->name('loan.reject');
+
+
+    Route::post('/deductions/setup', [RepaymentController::class, 'manualDeductionSetup'])->name('deductions.setup');
+    Route::get('/repayment/methods', [RepaymentController::class, 'listPaymentMethods'])->name('repayment.methods');
+    Route::post('/deductions/repayment/manual', [RepaymentController::class, 'createManualRepayment'])->name('repayment.manual');
+    Route::get('/deductions/payments', [RepaymentController::class, 'viewRepayments'])->name('deductions.payments');
+    Route::get('/deductions/{loan}/schedule', [RepaymentController::class, 'scheduledRepayments'])->name('loan.deduction.schedule');
+    Route::get('/deductions/pending', [RepaymentController::class, 'scheduledRepayments'])->name('deductions.schedule');
+
+    Route::get('/users/list', [RepaymentController::class, 'viewAllUsers'])->name('users.list');
+    Route::get('/roles/list', [RepaymentController::class, 'viewAllUsers'])->name('users.list');
 });
 
 Route::get('/states', [LoanController::class, 'listStates'])->name('states.list');

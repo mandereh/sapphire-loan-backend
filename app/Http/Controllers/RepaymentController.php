@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\Status;
 use App\Models\Loan;
 use App\Models\PaymentMethod;
 use App\Models\Repayment;
@@ -73,7 +74,9 @@ class RepaymentController extends Controller
             'loan_id' => $loan->id,
             'amount' => $totalRepaymentAmount,
             'reference' => $requestData['data']['mandateReference'],
-            'payment_method_id' => 4
+            'payment_method_id' => 4,
+            'status' => Status::SUCCESSFUL, //Update this to cover failed status
+            'initiator_id' => 0
         ]);
 
         // Fetch the scheduled deductions for the loan
@@ -118,30 +121,66 @@ class RepaymentController extends Controller
     //Search by LoanID or payment method (Remita or Transfer)
     public function viewRepayments(Request $request){
 
-        $validator = Validator::make($request->all(), [
-            'loanId' => 'required|numeric|exists:loans,id',
-            'paymentMethodId' => 'required|numeric|exists:payment_methods,id'
-        ]);
+        // $validator = Validator::make($request->all(), [
+        //     'loanId' => 'required|numeric|exists:loans,id',
+        //     'paymentMethodId' => 'required|numeric|exists:payment_methods,id'
+        // ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
+        // if ($validator->fails()) {
+        //     return response()->json(['errors' => $validator->errors()], 400);
+        // }
 
         $loanId = $request->input('loanId');
         $paymentMethodId = $request->input('paymentMethodId');
 
-        $query = Repayment::query();
+        $status = $request->input('status');
+
+        $repayments = new Repayment();
+
+        if($loanId){
+           $repayments = $repayments->where('loan_id', $loanId);
+        }
+        if ($paymentMethodId){
+            $repayments = $repayments->where('payment_method_id',$paymentMethodId);
+        }
+        if ($status){
+            $repayments->where('status',$status);
+        }
+
+        $repayments = $repayments->with('paymentMethod')->latest()->paginate(10)->withQueryString();
+        return response()->json([
+            'message' => 'Retrieved repayments successfully',
+            'data'=>$repayments,
+        ], 200);
+    }
+
+    public function scheduledDeductions(Request $request, $loan){
+
+        $query = ScheduledDeduction::where('loan_id', $loan);
+
+        $scheduledDeductions = $query->get();
+
+        return response()->json([
+            'message' => "Retrieved schedule for $loan successfully",
+            'data'=> $scheduledDeductions,
+        ], 200);
+    }
+
+    public function pendingDeductions(Request $request, $loan){
+
+        $query = ScheduledDeduction::where('status', '!=', Status::COMPLETED)->where('balance', '>', 0);
+
+        $loanId = $request->input('loanId');
 
         if($loanId){
             $query->where('loan_id', $loanId);
         }
-        if ($paymentMethodId){
-            $query->where('payment_method_id',$paymentMethodId);
-        }
-        $repayments = $query->get();
+
+        $scheduledDeductions = $query->paginate(10)->withQueryString();
+
         return response()->json([
             'message' => 'Retrieved repayments successfully',
-            'data'=>$repayments,
+            'data'=> $scheduledDeductions,
         ], 200);
     }
 
@@ -152,7 +191,8 @@ class RepaymentController extends Controller
         // setup deduction on remita //CHECK DisburseLoan job for snippet
     }
 
-    public function listPaymentMethods(){
+    public function listPaymentMethods(Request $request){
+
         $response = [
             'status_code' => '00',
             'message' => "Retrieved payment methods Successfully",
@@ -193,7 +233,9 @@ class RepaymentController extends Controller
             'loan_id'=>$loan->id,
             'amount'=>$request->input('amount'),
             'reference'=>$request->input('reference'),
-            'payment_method_id'=>$request->input('paymentMethodId')
+            'payment_method_id'=>$request->input('paymentMethodId'),
+            'status' => Status::SUCCESSFUL,
+            'initiator_id' => $request->user()->id
         ]);
 
         // Fetch the scheduled deductions for the loan
