@@ -88,7 +88,7 @@ class LoanController extends Controller
         if($result){
             $key = array_key_first($result);
             if($key){
-                $loan->salary_bank = $result[$key]['name'];
+                $loan->salary_bank = $result[$key]['bankName'];
             }
         }
 
