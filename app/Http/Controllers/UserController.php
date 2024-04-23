@@ -75,7 +75,8 @@ class UserController extends Controller
         //     'ippis' => 'required|numeric'
         // ]);
 
-        $user = User::where('ippis_number', $request->ippis)
+                $user = User::
+                        where('ippis_number', $request->ippis ?? '')
                         ->orWhere('phone_number', $request->phone_number ?? '')
                         ->orWhere('email', $request->email ?? '')
                         ->first();
