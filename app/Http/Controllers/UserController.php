@@ -53,7 +53,8 @@ class UserController extends Controller
             'gender' => $request->gender,
             'password' => Hash::make(Str::random(8)),
             'active' => true,
-            'refferal_code' => $lastCode
+            'refferal_code' => $lastCode,
+            'title' => $request->title
         ]);
         
 
@@ -75,8 +76,8 @@ class UserController extends Controller
         // ]);
 
         $user = User::where('ippis_number', $request->ippis)
-                        ->orWhere('phone_number', $request->phone_number)
-                        ->orWhere('email', $request->email)
+                        ->orWhere('phone_number', $request->phone_number ?? '')
+                        ->orWhere('email', $request->email ?? '')
                         ->first();
 
         if($user){

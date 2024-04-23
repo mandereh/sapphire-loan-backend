@@ -24,7 +24,7 @@ class RegisterRequest extends FormRequest
         $eighteenYearsAgo = today()->subYears(18)->toDateString();
         return [
             'title' => 'required|string|max:30',
-            'bvn' => 'required|digits:11',
+            'bvn' => 'nullable|digits:11',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
