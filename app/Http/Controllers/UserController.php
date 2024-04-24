@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -51,7 +53,8 @@ class UserController extends Controller
             'gender' => $request->gender,
             'password' => Hash::make(Str::random(8)),
             'active' => true,
-            'refferal_code' => $lastCode
+            'refferal_code' => $lastCode,
+            'title' => $request->title
         ]);
         
 
@@ -72,9 +75,10 @@ class UserController extends Controller
         //     'ippis' => 'required|numeric'
         // ]);
 
-        $user = User::where('ippis_number', $request->ippis)
-                        ->orWhere('phone_number', $request->phone_number)
-                        ->orWhere('email', $request->email)
+                $user = User::
+                        where('ippis_number', $request->ippis ?? 0)
+                        ->orWhere('phone_number', $request->phone_number ?? 0)
+                        ->orWhere('email', $request->email ?? 0)
                         ->first();
 
         if($user){
@@ -148,7 +152,65 @@ class UserController extends Controller
         return response()->json($resp, $statusCode);
     }
 
-    public function viewAllUsers(){
+    public function viewAllUsers(Request $request){
+
+        $users = new User();
+
+        if($request->has('q') && $request->input('q')){
+            $q = $request->input('q');
+            $users = $users
+                        ->where(function($query) use($q){
+                            $query->where('first_name', 'like', "%$q%")
+                            ->orWhere('last_name', 'like', "%$q%")
+                            ->orWhere('email', 'like', "%$q%")
+                            ->orWhere('phone_number', 'like', "%$q%")
+                            ->orWhere('organization_name', 'like', "%$q%")
+                            ->orWhereHas('roles', function($query) use ($q){
+                                $query->where('name', 'like', "%$q%");
+                            });
+                        });
+        }
+
+        if($request->isAdmin){
+            $users = $users->has('role');
+        }
+
+        $statusCode = 200;
+
+        $resp = [
+            'status_code' => '00',
+            'message' => "Retrieved users successfully",
+            'data' => $users
+        ];
+
+        return response()->json($resp, $statusCode);
+    }
+
+    public function allRoles(){
+        $statusCode = 200;
+
+        $resp = [
+            'status_code' => '00',
+            'message' => "Retrieved all roles successfully",
+            'data' => Role::all()
+        ];
+
+        return response()->json($resp, $statusCode);
+    }
+
+    public function allPermissions(){
+        $statusCode = 200;
+
+        $resp = [
+            'status_code' => '00',
+            'message' => "Retrieved all permissions successfully",
+            'data' => Permission::all()
+        ];
+
+        return response()->json($resp, $statusCode);
+    }
+
+    public function allAdmins(){
 
     }
 

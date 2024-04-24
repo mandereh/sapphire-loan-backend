@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\Status;
+use App\ExternalServices\GiroService;
 use App\Models\Loan;
 use App\Models\PaymentMethod;
 use App\Models\Repayment;
@@ -74,7 +75,9 @@ class RepaymentController extends Controller
             'loan_id' => $loan->id,
             'amount' => $totalRepaymentAmount,
             'reference' => $requestData['data']['mandateReference'],
-            'payment_method_id' => 4
+            'payment_method_id' => 4,
+            'status' => Status::SUCCESSFUL, //Update this to cover failed status
+            'initiator_id' => 0
         ]);
 
         // Fetch the scheduled deductions for the loan
@@ -119,70 +122,79 @@ class RepaymentController extends Controller
     //Search by LoanID or payment method (Remita or Transfer)
     public function viewRepayments(Request $request){
 
-        $validator = Validator::make($request->all(), [
-            'loanId' => 'required|numeric|exists:loans,id',
-            'paymentMethodId' => 'required|numeric|exists:payment_methods,id'
-        ]);
+        // $validator = Validator::make($request->all(), [
+        //     'loanId' => 'required|numeric|exists:loans,id',
+        //     'paymentMethodId' => 'required|numeric|exists:payment_methods,id'
+        // ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 400);
-        }
+        // if ($validator->fails()) {
+        //     return response()->json(['errors' => $validator->errors()], 400);
+        // }
 
         $loanId = $request->input('loanId');
         $paymentMethodId = $request->input('paymentMethodId');
 
-        $query = Repayment::query();
+        $status = $request->input('status');
+
+        $repayments = new Repayment();
 
         if($loanId){
-            $query->where('loan_id', $loanId);
+           $repayments = $repayments->where('loan_id', $loanId);
         }
+        
         if ($paymentMethodId){
-            $query->where('payment_method_id',$paymentMethodId);
+            $repayments = $repayments->where('payment_method_id',$paymentMethodId);
         }
-        $repayments = $query->get();
+
+        if ($status){
+            $repayments = $repayments->where('status',$status);
+        }
+
+        $repayments = $repayments->with('paymentMethod')->with('loan.user')->with('initiator')->latest()->paginate(10)->withQueryString();
         return response()->json([
             'message' => 'Retrieved repayments successfully',
             'data'=>$repayments,
         ], 200);
     }
 
-    public function manualDeductionSetup(Loan $loan){
-        // check if status is pending deduction
-        if ($loan->status === Status::PENDING_DISBURSEMENT) {
-            $response = [
-                'status_code' => '50',
-                'message' => "Loan not pending disbursement.",
-                'data'=>null
-            ];
-            return response($response, 500);
-        }
-        // setup deduction on remita //CHECK DisburseLoan job for snippet
-        $giroService = new GiroService();
-        $giroResponse = $giroService->fundTransfer('callBack', $loan->salary_account_number, $loan->bank_code, config('services.giro.source_account'), $loan->amount, "Disbursement of loan to {$loan->user->phone_number} for {$loan->reference}", 'LD-'.$loan->reference);
-        if(isset($giroResponse['meta']) && $giroResponse['meta']['statusCode'] === 200 && $giroResponse['meta']['success']){
-            $loan->status = Status::DISBURSED;
-            $loan->save();
-            $response = [
-                'status_code' => '00',
-                'message' => "Loan Deduction setup confirmed",
-                'data'=>$loan
-            ];
-            return response($response, 201);
-        }
+    public function scheduledDeductions(Request $request, $loan){
 
-        $loan->status = Status::FAILED;
-        $loan->failure_reason = 'Deduction setup failed';
+        $query = ScheduledDeduction::where('loan_id', $loan);
 
-        $response = [
-            'status_code' => '50',
-            'message' => "Loan Deduction setup failed",
-            'data'=>null
-        ];
-        return response($response, 500);
+        $scheduledDeductions = $query->get();
 
+        return response()->json([
+            'message' => "Retrieved schedule for $loan successfully",
+            'data'=> $scheduledDeductions,
+        ], 200);
     }
 
-    public function listPaymentMethods(){
+    public function pendingDeductions(Request $request){
+
+        $query = ScheduledDeduction::where('active', true)->where('balance', '>', 0);
+
+        $loanId = $request->input('loanId');
+
+        if($loanId){
+            $query->where('loan_id', $loanId);
+        }
+
+        $scheduledDeductions = $query->with('loan.user')->orderBy('due_date', 'ASC')->paginate(10)->withQueryString();
+
+        return response()->json([
+            'message' => 'Retrieved repayments successfully',
+            'data'=> $scheduledDeductions,
+        ], 200);
+    }
+
+    public function manualDeductionSetup(Loan $loan){
+        // check if status is pending deduction setup
+        
+        // setup deduction on remita //CHECK DisburseLoan job for snippet
+    }
+
+    public function listPaymentMethods(Request $request){
+
         $response = [
             'status_code' => '00',
             'message' => "Retrieved payment methods Successfully",
@@ -223,12 +235,14 @@ class RepaymentController extends Controller
             'loan_id'=>$loan->id,
             'amount'=>$request->input('amount'),
             'reference'=>$request->input('reference'),
-            'payment_method_id'=>$request->input('paymentMethodId')
+            'payment_method_id'=>$request->input('paymentMethodId'),
+            'status' => Status::SUCCESSFUL,
+            'initiator_id' => $request->user()->id
         ]);
 
         // Fetch the scheduled deductions for the loan
         $scheduledDeductions = ScheduledDeduction::where('loan_id', $loan->id)
-            ->where('status', 'active')
+            ->where('active', true)
             ->orWhere('balance', '>', 0)
             ->get();
         //Update the scheduled deductions based on amounts paid for this loan reducing the balances

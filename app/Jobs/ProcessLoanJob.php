@@ -75,11 +75,11 @@ class ProcessLoanJob implements ShouldQueue
                             'balance' => $monthlyRepayment,
                             'due_date' => today()->addMonths($monthsToAdd)
                         ]);
-                        $monthsToAdd;
+                        $monthsToAdd++;
                         $tenor--;
                     }
 
-                    if($loan->user->email){
+                    if($loan->user->email && !str_contains($loan->user->email, 'example')){
                         $digiSign = new DigisignService();
     
                         $digisignResponse = $digiSign->transformTemplate($loan);

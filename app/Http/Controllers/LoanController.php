@@ -87,12 +87,16 @@ class LoanController extends Controller
 
         if($result){
             $key = array_key_first($result);
-            $loan->salary_bank = $result[$key]['name'];
+            if($key){
+                $loan->salary_bank = $result[$key]['bankName'];
+            }
         }
 
         $referrer = User::where('refferal_code', $request->reffered_by)->first();
 
-        $loan->reffered_by_id = $referrer->id;
+        if($referrer){
+            $loan->reffered_by_id = $referrer->id;
+        }
 
         $loan->state_id = $request->state;
 

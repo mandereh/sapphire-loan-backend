@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Loan;
+use App\Models\User;
 
 class Repayment extends Model
 {
@@ -18,6 +18,8 @@ class Repayment extends Model
         'amount',
         'reference',
         'payment_method_id',
+        'status',
+        'initiator_id'
     ];
 
     /**
@@ -33,10 +35,20 @@ class Repayment extends Model
     /**
      * Get the loan that owns the Repayment
      *
-     * @return HasMany
+     * @return BelongsTo
      */
-    public function paymentMethod(): HasMany
+    public function paymentMethod(): BelongsTo
     {
-        return $this->hasMany(PaymentMethod::class);
+        return $this->belongsTo(PaymentMethod::class);
+    }
+
+    /**
+     * Get the initiator that owns the Repayment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function initiator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'initiator_id');
     }
 }
