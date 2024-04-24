@@ -141,11 +141,13 @@ class RepaymentController extends Controller
         if($loanId){
            $repayments = $repayments->where('loan_id', $loanId);
         }
+        
         if ($paymentMethodId){
             $repayments = $repayments->where('payment_method_id',$paymentMethodId);
         }
+
         if ($status){
-            $repayments->where('status',$status);
+            $repayments = $repayments->where('status',$status);
         }
 
         $repayments = $repayments->with('paymentMethod')->with('loan.user')->with('initiator')->latest()->paginate(10)->withQueryString();
