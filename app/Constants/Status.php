@@ -25,5 +25,6 @@ class  Status{
     const PENDING_CONFIRMATION = "pending_customer_confirmation";
     const CONFIRMATION_SENT = "confirmation_sent";
     const PENDING_APPROVAL = "pending_approval";
+    const PENDING_DEDUCTION_SETUP = "pending_deduction_setup";
     const PENDING_DISBURSEMENT = "pending_disbursement";
 }

@@ -83,8 +83,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
     Route::get('/repayment/methods', [RepaymentController::class, 'listPaymentMethods'])->name('repayment.methods');
     Route::post('/deductions/repayment/manual', [RepaymentController::class, 'createManualRepayment'])->name('repayment.manual');
     Route::get('/deductions/payments', [RepaymentController::class, 'viewRepayments'])->name('deductions.payments');
-    Route::get('/deductions/{loan}/schedule', [RepaymentController::class, 'scheduledRepayments'])->name('loan.deduction.schedule');
-    Route::get('/deductions/pending', [RepaymentController::class, 'scheduledRepayments'])->name('deductions.schedule');
+    Route::get('/deductions/{loan}/schedule', [RepaymentController::class, 'scheduledDeductions'])->name('loan.deduction.schedule');
+    Route::get('/deductions/pending', [RepaymentController::class, 'pendingDeductions'])->name('deductions.schedule');
 
     Route::get('/users/list', [RepaymentController::class, 'viewAllUsers'])->name('users.list');
     Route::get('/roles/list', [RepaymentController::class, 'viewAllUsers'])->name('users.list');
@@ -102,9 +102,3 @@ Route::post('/user/register', [UserController::class, 'register'])->name('regist
 Route::post('/loan/apply', [LoanController::class, 'apply'])->name('loan.apply');
 
 Route::post('/collection-notification', [RepaymentController::class, 'handleCollectionNotification']);
-
-//Repayments
-Route::post('/repayments/createManualRepayment', [RepaymentController::class, 'createManualRepayment']);
-Route::get('/repayments/listPaymentMethods', [RepaymentController::class, 'listPaymentMethods']);
-Route::post('/repayments/viewRepayments', [RepaymentController::class, 'viewRepayments']);
-Route::post('/repayments/{loan}/manualDeductionSetup', [RepaymentController::class, 'manualDeductionSetup']);
