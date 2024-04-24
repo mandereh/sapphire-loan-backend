@@ -79,20 +79,20 @@ class ProcessLoanJob implements ShouldQueue
                         $tenor--;
                     }
 
-                    // if($loan->user->email && !str_contains($loan->user->email, 'example')){
-                    //     $digiSign = new DigisignService();
+                    if($loan->user->email && !str_contains($loan->user->email, 'example')){
+                        $digiSign = new DigisignService();
     
-                    //     $digisignResponse = $digiSign->transformTemplate($loan);
+                        $digisignResponse = $digiSign->transformTemplate($loan);
     
-                    //     if(isset($digisignResponse['data']['status']) && ($digisignResponse['data']['status'] == 'success' || $digisignResponse['data']['status'] == 'pending')){
-                    //         $loan->document_id = $digisignResponse['data']['public_id'];
-                    //         $loan->status = Status::CONFIRMATION_SENT;
-                    //     }
-                    //     $loan->save();    
-                    // }else{
+                        if(isset($digisignResponse['data']['status']) && ($digisignResponse['data']['status'] == 'success' || $digisignResponse['data']['status'] == 'pending')){
+                            $loan->document_id = $digisignResponse['data']['public_id'];
+                            $loan->status = Status::CONFIRMATION_SENT;
+                        }
+                        $loan->save();    
+                    }else{
                         $loan->status = Status::PENDING_CONFIRMATION;
                         $loan->save();
-                    // }
+                    }
     
                 }else{
                     $loan->status = Status::REJECTED;
