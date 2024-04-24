@@ -49,7 +49,7 @@ class LoanController extends Controller
             'message' => "Retrieved loans Successfully",
             'data' => $loans
         ];
-        
+
 
         $statusCode = 200;
 
@@ -80,7 +80,7 @@ class LoanController extends Controller
         $loan->bank_code = $request->bank_code;
 
         $allBanks = (new GiroService())->getBanks('system');
-        
+
         $result = array_filter($allBanks['data'], function($item) use($loan){
             return $item['bankCode'] == $loan->bank_code;
         });
@@ -171,9 +171,9 @@ class LoanController extends Controller
                 'message' => "Verification Affordability check successful",
                 'data' => $data
             ];
-    
+
             $statusCode = 200;
-    
+
             return response($resp, $statusCode);
         }else{
             $resp = [
@@ -186,9 +186,6 @@ class LoanController extends Controller
         return response($resp, $statusCode);
     }
 
-        
-
-        
     }
 
     public function listStates(){
@@ -228,7 +225,7 @@ class LoanController extends Controller
             'message' => "Loan Type updated Successfully",
             'data' => $loanType
         ];
-        
+
 
         $statusCode = 200;
 
@@ -258,14 +255,14 @@ class LoanController extends Controller
                 'message' => "Banks retrieved Successfully",
                 'data' => $banksResponse['data']
             ];
-    
+
             $statusCode = 200;
         }else{
             $resp = [
                 'status_code' => '50',
                 'message' => "Something went wrong",
             ];
-    
+
             $statusCode = 500;
         }
         return response($resp, $statusCode);
@@ -282,14 +279,14 @@ class LoanController extends Controller
                 'message' => "Account Details retrieved Successfully",
                 'data' => $validateAccountResponse['data']
             ];
-    
+
             $statusCode = 200;
         }else{
             $resp = [
                 'status_code' => '50',
                 'message' => "Something went wrong! Failed to validate account",
             ];
-    
+
             $statusCode = 500;
         }
         return response($resp, $statusCode);
@@ -301,7 +298,7 @@ class LoanController extends Controller
         $this->authorize('update', $loan);
 
         $filePath = $request->file('authorization_file')->store();
-        
+
         $filePath = explode('/', $filePath);
 
         array_shift($filePath);
@@ -318,7 +315,7 @@ class LoanController extends Controller
         ];
 
         $statusCode = 200;
-        
+
         return response($resp, $statusCode);
     }
 
@@ -372,7 +369,7 @@ class LoanController extends Controller
         ];
 
         $statusCode = 200;
-        
+
         return response($resp, $statusCode);
     }
 
